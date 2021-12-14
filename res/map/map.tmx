@@ -46,16 +46,16 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="4" name="death_zone" locked="1">
+ <objectgroup id="4" name="death_zone">
   <object id="7" type="death_zone" x="-656" y="-256" width="576" height="656"/>
   <object id="8" type="death_zone" x="-656" y="-720" width="1280" height="560"/>
   <object id="9" type="death_zone" x="-656" y="368" width="1280" height="656"/>
   <object id="10" type="death_zone" x="560" y="-720" width="736" height="1744"/>
  </objectgroup>
- <objectgroup color="#ffc0c0" id="2" name="interaction_areas" locked="1">
-  <object id="3" template="templates/interaction_platformer.tx" x="0" y="0" width="288" height="272"/>
+ <objectgroup color="#ffc0c0" id="2" name="interaction_areas">
+  <object id="3" type="interaction_platformer" x="0" y="0" width="288" height="272"/>
  </objectgroup>
- <objectgroup color="#7f7f7f" id="3" name="camera_views" locked="1" opacity="0.14">
-  <object id="5" template="templates/camera_view.tx" x="-16" y="48" width="320" height="176"/>
+ <objectgroup color="#7f7f7f" id="3" name="camera_views" opacity="0.14">
+  <object id="5" type="camera_view" x="-16" y="48" width="320" height="176"/>
  </objectgroup>
 </map>

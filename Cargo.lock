@@ -1313,6 +1313,8 @@ dependencies = [
  "anyhow",
  "ggez",
  "hecs",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

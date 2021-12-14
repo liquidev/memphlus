@@ -1,5 +1,6 @@
 mod state;
 mod states;
+mod tiled;
 
 use ggez::conf::{WindowMode, WindowSetup};
 use ggez::event::{self, EventHandler};
@@ -15,10 +16,10 @@ impl Game {
    const UPDATE_RATE: u32 = 60;
 
    /// Creates a new game.
-   pub fn new(ctx: &mut Context) -> Game {
-      Game {
-         state: Some(Box::new(states::game::State::new(ctx))),
-      }
+   pub fn new(ctx: &mut Context) -> anyhow::Result<Game> {
+      Ok(Game {
+         state: Some(Box::new(states::game::State::new(ctx)?)),
+      })
    }
 }
 
@@ -61,7 +62,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       .add_resource_path("assets")
       .build()?;
 
-   let game = Game::new(&mut ctx);
+   let game = Game::new(&mut ctx)?;
 
    event::run(ctx, event_loop, game)
 }

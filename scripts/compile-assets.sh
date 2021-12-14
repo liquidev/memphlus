@@ -16,7 +16,7 @@ compress-json() {
    cat "$1" | jq -c | tee "$1" > /dev/null
 }
 
-echo "Compressing tileset"
-compress-json "$tileset_json"
-echo "Compressing map"
-compress-json "$map_json"
+# echo "Compressing tileset"
+# compress-json "$tileset_json"
+# echo "Compressing map"
+# compress-json "$map_json"

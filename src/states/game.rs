@@ -1,15 +1,23 @@
 //! The state in which you play the game.
 
-use ggez::Context;
+use std::io::Read;
+
+use ggez::{filesystem, Context};
 
 use crate::state::{DrawArgs, GameState};
+use crate::tiled;
 
 /// The state.
 pub struct State {}
 
 impl State {
-   pub fn new(_ctx: &mut Context) -> Self {
-      Self {}
+   pub fn new(ctx: &mut Context) -> anyhow::Result<Self> {
+      let mut json = Vec::new();
+      let mut file = filesystem::open(ctx, "/generated/map.json")?;
+      file.read_to_end(&mut json)?;
+      let map = tiled::Map::load_from_json(std::str::from_utf8(&json)?)?;
+      println!("{:#?}", map);
+      Ok(Self {})
    }
 }
 
