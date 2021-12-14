@@ -9,6 +9,10 @@ edition = "2021"
 anyhow = "1.0.51"
 ggez = { version = "0.7.0", default_features = false, features = [] }
 hecs = "0.7.1"
+glam = "0.20.1"
+nalgebra = { version = "0.29.0", features = ["convert-mint"] }
+rapier2d = "0.11.1"
+mint = "0.5.8"
 
 # Data formats
 serde = { version = "1.0.131", features = ["derive"] }

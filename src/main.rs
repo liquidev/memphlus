@@ -1,3 +1,5 @@
+mod common;
+mod physics;
 mod state;
 mod states;
 mod tiled;
@@ -54,8 +56,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
    let (mut ctx, event_loop) = ContextBuilder::new("memphlus", "liquidev")
       .window_setup(WindowSetup::default().title("mem.phlus"))
       .window_mode(WindowMode {
-         width: 1600.0,
-         height: 900.0,
+         width: 1280.0,
+         height: 720.0,
          resizable: true,
          ..Default::default()
       })
