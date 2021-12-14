@@ -1,0 +1,9 @@
+[package]
+name = "memphlus"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.51"
+ggez = { version = "0.7.0", default_features = false, features = [] }
+hecs = "0.7.1"
