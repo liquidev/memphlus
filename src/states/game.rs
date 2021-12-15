@@ -1,34 +1,38 @@
 //! The state in which you play the game.
 
-use std::io::Read;
-
 use ggez::graphics::Color;
-use ggez::{filesystem, graphics, Context};
+use ggez::{graphics, Context};
 use glam::Vec2;
 use hecs::World;
 
+use crate::common::{read_file_to_string, vector, Transform};
+use crate::map::Map;
 use crate::physics::Physics;
 use crate::state::{DrawArgs, GameState};
-use crate::tiled;
 
 /// The state.
 pub struct State {
    world: World,
    physics: Physics,
+   map: Map,
 }
 
 impl State {
    pub fn new(ctx: &mut Context) -> anyhow::Result<Self> {
-      let world = World::new();
-      let physics = Physics::new(Vec2::new(0.0, 1.0));
+      let mut world = World::new();
+      let mut physics = Physics::new(Vec2::new(0.0, 1.0));
+      let map = Map::load_into_world_from_json(
+         &mut world,
+         &mut physics,
+         &read_file_to_string(ctx, "/generated/tileset.json")?,
+         &read_file_to_string(ctx, "/generated/map.json")?,
+      )?;
 
-      let mut json = Vec::new();
-      let mut file = filesystem::open(ctx, "/generated/map.json")?;
-      file.read_to_end(&mut json)?;
-      let map = tiled::Map::load_from_json(std::str::from_utf8(&json)?)?;
-      println!("{:#?}", map);
-
-      Ok(Self { world, physics })
+      Ok(Self {
+         world,
+         physics,
+         map,
+      })
    }
 }
 
@@ -39,7 +43,8 @@ impl GameState for State {
    }
 
    fn draw(&mut self, DrawArgs { ctx, .. }: DrawArgs) -> anyhow::Result<()> {
-      graphics::clear(ctx, Color::from_rgb(127, 127, 127));
+      graphics::clear(ctx, Color::WHITE);
+      self.map.draw(ctx, Transform::new().scale(vector(32.0, 32.0)))?;
       Ok(())
    }
 

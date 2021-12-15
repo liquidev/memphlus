@@ -5,8 +5,11 @@ edition = "2021"
 
 [dependencies]
 
-# Game stuff
+# Common things
 anyhow = "1.0.51"
+arrayvec = "0.7.2"
+
+# Game stuff
 ggez = { version = "0.7.0", default_features = false, features = [] }
 hecs = "0.7.1"
 glam = "0.20.1"

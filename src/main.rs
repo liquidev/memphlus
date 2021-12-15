@@ -1,4 +1,5 @@
 mod common;
+mod map;
 mod physics;
 mod state;
 mod states;
@@ -54,7 +55,7 @@ impl EventHandler<Error> for Game {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
    let (mut ctx, event_loop) = ContextBuilder::new("memphlus", "liquidev")
-      .window_setup(WindowSetup::default().title("mem.phlus"))
+      .window_setup(WindowSetup::default().title("mem.pHlus"))
       .window_mode(WindowMode {
          width: 1280.0,
          height: 720.0,

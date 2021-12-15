@@ -1,19 +1,104 @@
 //! Minimal Tiled JSON loader.
 
-use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::ops::Deref;
+
+use serde::de::Visitor;
+use serde::Deserialize;
+
+pub type TileId = u16;
+
+pub type ObjectId = u32;
+
+/// The value of a property.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "type", content = "value", rename_all = "snake_case")]
+pub enum PropertyValue {
+   String(String),
+   Int(i32),
+   Float(f32),
+   Bool(bool),
+}
+
+/// Storage for properties.
+#[derive(Debug, Clone)]
+pub struct Properties(HashMap<String, PropertyValue>);
+
+/// Properties dereference to a `HashMap<String, PropertyValue>`.
+impl Deref for Properties {
+   type Target = HashMap<String, PropertyValue>;
+
+   fn deref(&self) -> &Self::Target {
+      &self.0
+   }
+}
+
+impl<'de> Deserialize<'de> for Properties {
+   fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+   where
+      D: serde::Deserializer<'de>,
+   {
+      #[derive(Debug, Deserialize)]
+      struct Property {
+         name: String,
+         #[serde(flatten)]
+         value: PropertyValue,
+      }
+
+      struct PropertyVisitor {
+         properties: HashMap<String, PropertyValue>,
+      }
+
+      impl<'de> Visitor<'de> for PropertyVisitor {
+         type Value = HashMap<String, PropertyValue>;
+
+         fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("property array")
+         }
+
+         fn visit_seq<A>(mut self, mut seq: A) -> Result<Self::Value, A::Error>
+         where
+            A: serde::de::SeqAccess<'de>,
+         {
+            while let Some(item) = seq.next_element::<Property>()? {
+               self.properties.insert(item.name, item.value);
+            }
+            Ok(self.properties)
+         }
+      }
+
+      deserializer
+         .deserialize_seq(PropertyVisitor {
+            properties: HashMap::new(),
+         })
+         .map(|hash_map| Properties(hash_map))
+   }
+}
+
+impl Default for Properties {
+   fn default() -> Self {
+      Self(Default::default())
+   }
+}
 
 /// A tile specification - its ID and kind, as specified in the editor.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Tile {
    /// The unique ID of the tile.
-   pub id: u32,
+   pub id: TileId,
    /// The kind of tile, as specified in the editor.
    #[serde(rename = "type")]
    pub kind: String,
+   /// The objects that make up the tile's collision.
+   #[serde(rename = "objectgroup")]
+   pub object_group: Option<LayerKind>,
+   /// The custom properties of the tile.
+   #[serde(default)]
+   pub properties: Properties,
 }
 
 /// A tileset.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Tileset {
    /// The width of tiles in the tileset.
    #[serde(rename = "tilewidth")]
@@ -37,24 +122,27 @@ impl Tileset {
 }
 
 /// A chunk of tiles.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Chunk {
-   pub data: Vec<u32>,
+   pub data: Vec<TileId>,
    pub x: u32,
    pub y: u32,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Object {
+   pub id: ObjectId,
    pub x: f32,
    pub y: f32,
    pub width: f32,
    pub height: f32,
    #[serde(rename = "type")]
    pub kind: String,
+   #[serde(default)]
+   pub properties: Properties,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 pub enum LayerKind {
    #[serde(rename = "tilelayer")]
@@ -63,13 +151,13 @@ pub enum LayerKind {
    Object { objects: Vec<Object> },
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Layer {
    #[serde(flatten)]
    pub kind: LayerKind,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Map {
    pub layers: Vec<Layer>,
 }
