@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="7" nextobjectid="13">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="7" nextobjectid="17">
  <editorsettings>
   <chunksize width="8" height="8"/>
  </editorsettings>
@@ -11,10 +11,30 @@
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
-64,0,0,0,0,0,0,0,
-64,0,0,0,0,0,0,0,
+64,0,0,0,0,0,36,19,
+64,0,0,0,0,0,0,25,
 64,0,0,0,0,0,0,0,
 64,0,0,0,0,0,0,0
+</chunk>
+   <chunk x="8" y="0" width="8" height="8">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+19,19,19,37,0,0,33,5,
+25,25,25,0,0,0,33,13,
+0,0,0,0,0,0,33,21,
+0,0,0,0,0,0,0,0
+</chunk>
+   <chunk x="16" y="0" width="8" height="8">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+17,0,0,0,0,0,0,0,
+17,0,0,0,0,0,0,0,
+17,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
 </chunk>
    <chunk x="0" y="8" width="8" height="8">
 64,0,0,0,0,0,0,0,
@@ -59,10 +79,15 @@
   <object id="9" type="death_zone" x="-656" y="368" width="1280" height="656"/>
   <object id="10" type="death_zone" x="560" y="-720" width="736" height="1744"/>
  </objectgroup>
- <objectgroup color="#ffc0c0" id="2" name="interaction_areas" locked="1">
-  <object id="3" template="templates/interaction_platformer.tx" x="0" y="0" width="288" height="272"/>
+ <objectgroup color="#ffc0c0" id="2" name="zones">
+  <object id="3" template="templates/interaction_platformer.tx" type="zone_platformer" x="0" y="0" width="288" height="272"/>
+  <object id="14" template="templates/interaction_platformer.tx" type="zone_deadly" x="172.365" y="51.8324" width="98.4237" height="58.9725" rotation="5"/>
  </objectgroup>
  <objectgroup color="#7f7f7f" id="3" name="camera_views" locked="1" opacity="0.14">
-  <object id="5" template="templates/camera_view.tx" x="-16" y="48" width="320" height="176"/>
+  <object id="5" template="templates/camera_view.tx" x="-16" y="48" width="320" height="176">
+   <properties>
+    <property name="area_name" value="One Small Step"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

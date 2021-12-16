@@ -1,10 +1,10 @@
 //! The state in which you play the game.
 
-use ggez::graphics::Color;
 use ggez::{graphics, Context};
 use glam::Vec2;
 use hecs::World;
 
+use crate::assets::RemappableColors;
 use crate::common::{read_file_to_string, vector, Transform};
 use crate::map::Map;
 use crate::physics::Physics;
@@ -43,7 +43,7 @@ impl GameState for State {
    }
 
    fn draw(&mut self, DrawArgs { ctx, .. }: DrawArgs) -> anyhow::Result<()> {
-      graphics::clear(ctx, Color::WHITE);
+      graphics::clear(ctx, RemappableColors::BACKGROUND);
       self.map.draw(ctx, Transform::new().scale(vector(32.0, 32.0)))?;
       Ok(())
    }

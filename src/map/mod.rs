@@ -281,7 +281,7 @@ impl Map {
    fn load_layer(data: tiled::Layer, tileset: &Tileset) -> Layer {
       match data.kind {
          tiled::LayerKind::Tile { chunks } => Self::create_tile_layer(chunks, tileset),
-         tiled::LayerKind::Object { objects } => Layer::Object,
+         tiled::LayerKind::Object { objects: _ } => Layer::Object,
       }
    }
 

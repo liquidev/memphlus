@@ -1,3 +1,4 @@
+mod assets;
 mod common;
 mod map;
 mod physics;
@@ -10,6 +11,8 @@ use ggez::conf::{WindowMode, WindowSetup};
 use ggez::event::{self, EventHandler};
 use ggez::{graphics, timer, Context, ContextBuilder};
 use state::{DrawArgs, GameState};
+
+use crate::common::{rect, vector};
 
 /// The Game. All the relevant state and such.
 struct Game {
@@ -43,6 +46,14 @@ impl EventHandler<Error> for Game {
    }
 
    fn draw(&mut self, ctx: &mut Context) -> Result<(), Error> {
+      // Resize the window.
+      let (window_width, window_height) = graphics::size(ctx);
+      graphics::set_screen_coordinates(
+         ctx,
+         rect(vector(0.0, 0.0), vector(window_width, window_height)),
+      )
+      .wrap_error()?;
+
       // Calculate the alpha (interpolation factor).
       const DELTA_TIME: f64 = 1.0 / (Game::UPDATE_RATE as f64);
       let alpha = timer::duration_to_f64(timer::remaining_update_time(ctx)) / DELTA_TIME;

@@ -2,10 +2,10 @@
 
 use std::collections::HashMap;
 
-use ggez::graphics::{self, Color, DrawMode, DrawParam, MeshBuilder};
+use ggez::graphics::{self, DrawParam, MeshBuilder};
 use ggez::Context;
 
-use crate::common::{rect, vector, Transform};
+use crate::common::{vector, Transform};
 
 use super::{Chunk, Layer, Map, TileKind, TileMeshes, Tileset};
 

@@ -5,7 +5,7 @@ use std::path::Path;
 
 use ggez::graphics::{Color, Rect, Vertex};
 use ggez::{filesystem, Context};
-use glam::{Affine3A, Mat4, Vec2, Vec3};
+use glam::{Mat4, Vec2, Vec3};
 use mint::{ColumnMatrix4, IntoMint};
 
 /// Converts linear algebra values around.
