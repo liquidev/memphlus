@@ -8,6 +8,7 @@ edition = "2021"
 # Common things
 anyhow = "1.0.51"
 arrayvec = "0.7.2"
+bitflags = "1.3.2"
 
 # Game stuff
 ggez = { version = "0.7.0", default_features = false, features = [] }

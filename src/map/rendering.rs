@@ -7,7 +7,7 @@ use ggez::Context;
 
 use crate::common::{rect, vector, Transform};
 
-use super::{Chunk, Layer, Map, TileKind, Tileset};
+use super::{Chunk, Layer, Map, TileKind, TileMeshes, Tileset};
 
 impl Map {
    /// Draws the map to the screen.
@@ -47,32 +47,59 @@ impl Layer {
       Ok(())
    }
 
+   fn fade_opacities(kind: TileKind) -> (f32, f32) {
+      use TileKind::*;
+      match kind {
+         SolidTopFadeLeft | SolidBottomFadeLeft | SolidLeftFadeTop | SolidRightFadeTop => {
+            (0.0, 1.0)
+         }
+         SolidTopFadeRight | SolidBottomFadeRight | SolidLeftFadeBottom | SolidRightFadeBottom => {
+            (1.0, 0.0)
+         }
+         _ => unreachable!(),
+      }
+   }
+
    fn draw_chunk(
       chunk: &Chunk,
       tileset: &Tileset,
       ctx: &mut Context,
       transform: Transform,
    ) -> anyhow::Result<()> {
+      use TileKind::*;
+
       let mut mesh = MeshBuilder::new();
-      let mut non_empty = false;
+      let mut has_any_vertices = false;
       for y in 0..Chunk::SIZE {
          for x in 0..Chunk::SIZE {
             let tile_id = chunk[(x, y)];
             let tile_position = vector(x as f32, y as f32);
-            match tileset.kind(tile_id) {
-               TileKind::Empty => (),
-               _ => {
-                  mesh.rectangle(
-                     DrawMode::fill(),
-                     rect(tile_position, vector(1.0, 1.0)),
-                     Color::BLACK,
-                  )?;
-                  non_empty = true;
+            let center = tile_position + vector(0.5, 0.5);
+            let kind = tileset.kind(tile_id);
+            let mut block_has_vertices = true;
+            match kind {
+               SolidTopLeft | SolidTop | SolidTopRight | SolidRight | SolidBottomRight
+               | SolidBottom | SolidBottomLeft | SolidLeft | SolidVTop | SolidVMiddle
+               | SolidVBottom | SolidHLeft | SolidHCenter | SolidHRight | SolidTile => {
+                  TileMeshes::build_sides(&mut mesh, center, kind.try_into().unwrap())?
                }
+               SolidTopFadeLeft | SolidBottomFadeLeft | SolidLeftFadeBottom
+               | SolidRightFadeBottom | SolidTopFadeRight | SolidBottomFadeRight
+               | SolidLeftFadeTop | SolidRightFadeTop => TileMeshes::build_fading_side(
+                  &mut mesh,
+                  center,
+                  kind.side().unwrap(),
+                  Self::fade_opacities(kind),
+               )?,
+               SpikesUp | SpikesRight | SpikesDown | SpikesLeft => {
+                  TileMeshes::build_spikes(&mut mesh, center, kind.spike_direction().unwrap())?
+               }
+               _ => block_has_vertices = false,
             }
+            has_any_vertices = has_any_vertices | block_has_vertices;
          }
       }
-      if !non_empty {
+      if !has_any_vertices {
          return Ok(());
       }
 

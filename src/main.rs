@@ -5,6 +5,7 @@ mod state;
 mod states;
 mod tiled;
 
+use anyhow::Context as AnyhowContext;
 use ggez::conf::{WindowMode, WindowSetup};
 use ggez::event::{self, EventHandler};
 use ggez::{graphics, timer, Context, ContextBuilder};
@@ -63,9 +64,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
          ..Default::default()
       })
       .add_resource_path("assets")
-      .build()?;
+      .build()
+      .context("could not create ggez::Context")?;
 
-   let game = Game::new(&mut ctx)?;
+   let game = Game::new(&mut ctx).context("could not load game")?;
 
    event::run(ctx, event_loop, game)
 }
