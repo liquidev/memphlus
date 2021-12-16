@@ -1,5 +1,6 @@
 mod assets;
 mod common;
+mod entities;
 mod map;
 mod physics;
 mod state;

@@ -1,5 +1,7 @@
 //! Map loading, storage, and physics.
 
+mod collision;
+mod entities;
 mod meshes;
 mod rendering;
 
@@ -10,12 +12,13 @@ use std::str::FromStr;
 use anyhow::Context;
 use arrayvec::ArrayVec;
 use bitflags::bitflags;
+use glam::Vec2;
 use hecs::World;
 use rapier2d::prelude::ColliderBuilder;
 use serde::de::IntoDeserializer;
 use serde::{Deserialize, Serialize};
 
-use crate::common::Axis;
+use crate::common::{vector, Axis};
 use crate::physics::Physics;
 use crate::tiled::{self, TileId};
 
@@ -256,6 +259,12 @@ pub struct Map {
 }
 
 impl Map {
+   /// Returns the map's tile size. Note that this is not the actual size things are rendered and
+   /// simulated at, but rather the size of tiles that should be used in the Tiled map.
+   pub fn tile_size() -> Vec2 {
+      vector(16.0, 16.0)
+   }
+
    /// Loads a map from tileset and map JSON data.
    pub fn load_into_world_from_json(
       world: &mut World,
@@ -267,21 +276,31 @@ impl Map {
       let tileset = Tileset::try_from(tileset)?;
       let map = tiled::Map::load_from_json(map_json)?;
       Ok(Self {
-         layers: Self::load_layers(map.layers, &tileset),
+         layers: Self::load_layers(map.layers, world, physics, &tileset),
          tileset,
       })
    }
 
    /// Loads all layers from the given Vec.
-   fn load_layers(layers: Vec<tiled::Layer>, tileset: &Tileset) -> Vec<Layer> {
-      layers.into_iter().map(|layer| Self::load_layer(layer, tileset)).collect()
+   fn load_layers(
+      layers: Vec<tiled::Layer>,
+      world: &mut World,
+      physics: &mut Physics,
+      tileset: &Tileset,
+   ) -> Vec<Layer> {
+      layers.into_iter().map(|layer| Self::load_layer(layer, world, physics, tileset)).collect()
    }
 
    /// Loads a single tiled layer into an actual layer.
-   fn load_layer(data: tiled::Layer, tileset: &Tileset) -> Layer {
+   fn load_layer(
+      data: tiled::Layer,
+      world: &mut World,
+      physics: &mut Physics,
+      tileset: &Tileset,
+   ) -> Layer {
       match data.kind {
          tiled::LayerKind::Tile { chunks } => Self::create_tile_layer(chunks, tileset),
-         tiled::LayerKind::Object { objects: _ } => Layer::Object,
+         tiled::LayerKind::Object { objects } => Self::create_object_layer(objects, world, physics),
       }
    }
 

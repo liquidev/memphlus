@@ -6,6 +6,7 @@ use hecs::World;
 
 use crate::assets::RemappableColors;
 use crate::common::{read_file_to_string, vector, Transform};
+use crate::entities;
 use crate::map::Map;
 use crate::physics::Physics;
 use crate::state::{DrawArgs, GameState};
@@ -38,13 +39,18 @@ impl State {
 
 impl GameState for State {
    fn update(&mut self) -> anyhow::Result<()> {
+      entities::tick_systems(&mut self.world, &mut self.physics);
       self.physics.step();
       Ok(())
    }
 
    fn draw(&mut self, DrawArgs { ctx, .. }: DrawArgs) -> anyhow::Result<()> {
       graphics::clear(ctx, RemappableColors::BACKGROUND);
-      self.map.draw(ctx, Transform::new().scale(vector(32.0, 32.0)))?;
+
+      let transform = Transform::new().scale(vector(32.0, 32.0));
+      self.map.draw(ctx, transform)?;
+      entities::draw_systems(ctx, &mut self.world, transform)?;
+
       Ok(())
    }
 
