@@ -3,21 +3,25 @@
 use glam::Vec2;
 use rapier2d::prelude::{
    BroadPhase, CCDSolver, ColliderSet, IntegrationParameters, IslandManager, JointSet, NarrowPhase,
-   PhysicsPipeline, RigidBodySet,
+   PhysicsPipeline, QueryPipeline, RigidBodySet,
 };
 
 use crate::common::mint;
 
 pub struct Physics {
    pub gravity: Vec2,
+
    pub rigid_bodies: RigidBodySet,
    pub colliders: ColliderSet,
+   pub joints: JointSet,
+
    pub parameters: IntegrationParameters,
    pub pipeline: PhysicsPipeline,
+   pub query: QueryPipeline,
+
    pub island_manager: IslandManager,
    pub broad_phase: BroadPhase,
    pub narrow_phase: NarrowPhase,
-   pub joints: JointSet,
    pub ccd_solver: CCDSolver,
 }
 
@@ -28,16 +32,19 @@ impl Physics {
          gravity,
          rigid_bodies: RigidBodySet::new(),
          colliders: ColliderSet::new(),
+         joints: JointSet::new(),
+
          parameters: IntegrationParameters {
             dt: (crate::TIMESTEP / 2.0) as f32,
             erp: 1.0,
             ..IntegrationParameters::default()
          },
          pipeline: PhysicsPipeline::new(),
+         query: QueryPipeline::new(),
+
          island_manager: IslandManager::new(),
          broad_phase: BroadPhase::new(),
          narrow_phase: NarrowPhase::new(),
-         joints: JointSet::new(),
          ccd_solver: CCDSolver::new(),
       }
    }
@@ -60,5 +67,15 @@ impl Physics {
             &(),
          )
       }
+      self.query.update(&self.island_manager, &self.rigid_bodies, &self.colliders);
    }
+}
+
+/// Collision group bits.
+pub struct CollisionGroups;
+
+impl CollisionGroups {
+   pub const PLAYER: u32 = 0b0000_0001;
+   pub const SOLIDS: u32 = 0b0001_0000;
+   pub const ALL: u32 = Self::PLAYER | Self::SOLIDS;
 }
