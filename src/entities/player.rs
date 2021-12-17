@@ -23,13 +23,15 @@ use super::{Position, Size};
 
 /// Component for storing state for platformer controls..
 pub struct Platformer {
-   remaining_jump_ticks: u32,
+   remaining_jump_ticks: u8,
+   jump_buffer: u8,
 }
 
 impl Platformer {
    pub fn new() -> Self {
       Self {
          remaining_jump_ticks: 0,
+         jump_buffer: 0,
       }
    }
 }
@@ -44,7 +46,11 @@ impl Player {
    pub fn tick_controls(world: &mut World, physics: &mut Physics, input: &Input) {
       const SPEED: f32 = 175.0;
       const JUMP_STRENGTH: f32 = 700.0;
-      const JUMP_SUSTAIN: u32 = 7;
+      // The number of ticks during which the jump button can be held down to adjust height.
+      const JUMP_SUSTAIN: u8 = 7;
+      // The number of ticks of leeway during which one can be falling down and still jump when
+      // they land.
+      const JUMP_LEEWAY: u8 = 8;
 
       for (_id, (_, platformer, &RigidBody(body_handle))) in
          world.query_mut::<(&Player, &mut Platformer, &RigidBody)>()
@@ -59,14 +65,26 @@ impl Player {
             }
          }
 
-         if input.button_just_pressed(Button::Jump) && Self::is_on_ground(physics, body_handle) {
-            platformer.remaining_jump_ticks = JUMP_SUSTAIN;
+         if input.button_just_pressed(Button::Jump) {
+            platformer.jump_buffer = JUMP_LEEWAY;
          }
+         if platformer.jump_buffer > 0 && Self::is_on_ground(physics, body_handle) {
+            platformer.remaining_jump_ticks = JUMP_SUSTAIN;
+            platformer.jump_buffer = 0;
+            let body = &mut physics.rigid_bodies[body_handle];
+            let velocity = *body.linvel();
+            body.set_linvel(mint(vector(velocity.x, 0.0)), true);
+         }
+         platformer.jump_buffer = platformer.jump_buffer.saturating_sub(1);
+
          let body = &mut physics.rigid_bodies[body_handle];
          if input.button_down(Button::Jump) && platformer.remaining_jump_ticks > 0 {
             let strength = platformer.remaining_jump_ticks as f32 / JUMP_SUSTAIN as f32;
             let strength = strength.powf(4.0);
             body.apply_force(mint(vector(0.0, -JUMP_STRENGTH * strength)), true);
+         }
+         if !input.button_down(Button::Jump) {
+            platformer.remaining_jump_ticks = 0;
          }
          platformer.remaining_jump_ticks = platformer.remaining_jump_ticks.saturating_sub(1);
 
