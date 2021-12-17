@@ -1,13 +1,15 @@
 //! Components and systems for the player entity.
 
+use std::time::{Duration, Instant};
+
 use ggez::graphics::{self, DrawMode, DrawParam, MeshBuilder};
 use ggez::Context;
 use glam::Vec2;
 use hecs::{Entity, World};
 use rapier2d::math::Isometry;
 use rapier2d::prelude::{
-   CoefficientCombineRule, ColliderBuilder, Cuboid, InteractionGroups, QueryPipeline,
-   RigidBodyBuilder, RigidBodyHandle,
+   CoefficientCombineRule, ColliderBuilder, Cuboid, InteractionGroups, RigidBodyBuilder,
+   RigidBodyHandle,
 };
 
 use crate::assets::RemappableColors;
@@ -20,11 +22,15 @@ use super::physics::{Collider, RigidBody};
 use super::{Position, Size};
 
 /// Component for storing state for platformer controls..
-pub struct Platformer {}
+pub struct Platformer {
+   remaining_jump_ticks: u32,
+}
 
 impl Platformer {
    pub fn new() -> Self {
-      Self {}
+      Self {
+         remaining_jump_ticks: 0,
+      }
    }
 }
 
@@ -37,10 +43,11 @@ impl Player {
    /// Ticks the player controls.
    pub fn tick_controls(world: &mut World, physics: &mut Physics, input: &Input) {
       const SPEED: f32 = 175.0;
-      const JUMP_STRENGTH: f32 = 1250.0;
+      const JUMP_STRENGTH: f32 = 700.0;
+      const JUMP_SUSTAIN: u32 = 7;
 
-      for (_id, (_, _, &RigidBody(body_handle))) in
-         world.query_mut::<(&Player, &Platformer, &RigidBody)>()
+      for (_id, (_, platformer, &RigidBody(body_handle))) in
+         world.query_mut::<(&Player, &mut Platformer, &RigidBody)>()
       {
          {
             let body = &mut physics.rigid_bodies[body_handle];
@@ -53,17 +60,23 @@ impl Player {
          }
 
          if input.button_just_pressed(Button::Jump) && Self::is_on_ground(physics, body_handle) {
-            let body = &mut physics.rigid_bodies[body_handle];
-            body.apply_force(mint(vector(0.0, -JUMP_STRENGTH)), true);
+            platformer.remaining_jump_ticks = JUMP_SUSTAIN;
          }
-
          let body = &mut physics.rigid_bodies[body_handle];
+         if input.button_down(Button::Jump) && platformer.remaining_jump_ticks > 0 {
+            let strength = platformer.remaining_jump_ticks as f32 / JUMP_SUSTAIN as f32;
+            let strength = strength.powf(4.0);
+            body.apply_force(mint(vector(0.0, -JUMP_STRENGTH * strength)), true);
+         }
+         platformer.remaining_jump_ticks = platformer.remaining_jump_ticks.saturating_sub(1);
+
          let velocity = *body.linvel();
          let decelerated_x = velocity.x * 0.8;
          body.set_linvel(mint(Vec2::new(decelerated_x, velocity.y)), true);
       }
    }
 
+   /// Returns whether the (player's) physics body is standing on solid ground.
    fn is_on_ground(physics: &Physics, body: RigidBodyHandle) -> bool {
       let body = &physics.rigid_bodies[body];
       let size = Vec2::from_slice(&Self::SIZE) / 2.0;
