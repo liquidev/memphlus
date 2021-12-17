@@ -1,6 +1,7 @@
 mod assets;
 mod common;
 mod entities;
+mod input;
 mod map;
 mod physics;
 mod state;
@@ -9,61 +10,52 @@ mod tiled;
 
 use anyhow::Context as AnyhowContext;
 use ggez::conf::{WindowMode, WindowSetup};
-use ggez::event::{self, EventHandler};
+use ggez::event::winit_event::{Event, WindowEvent};
+use ggez::event::{self, ControlFlow};
 use ggez::{graphics, timer, Context, ContextBuilder};
+use input::Input;
 use state::{DrawArgs, GameState};
 
 use crate::common::{rect, vector};
 
-/// The Game. All the relevant state and such.
-struct Game {
-   state: Option<Box<dyn GameState>>,
+pub const UPDATE_RATE: u32 = 60;
+pub const TIMESTEP: f64 = 1.0 / (UPDATE_RATE as f64);
+
+fn update(
+   ctx: &mut Context,
+   state_box: &mut Option<Box<dyn GameState>>,
+   input: &mut Input,
+) -> Result<(), Error> {
+   // Switch states, if needed.
+   let state = state_box.take().unwrap();
+   let state = state.next_state()?;
+   *state_box = Some(state);
+
+   // Tick physics and input and all that stuff.
+   while timer::check_update_time(ctx, UPDATE_RATE) {
+      state_box.as_mut().unwrap().update(input)?;
+      input.finish_frame();
+   }
+
+   Ok(())
 }
 
-impl Game {
-   const UPDATE_RATE: u32 = 60;
+fn draw(ctx: &mut Context, state: &mut dyn GameState) -> Result<(), Error> {
+   // Resize the window.
+   let (window_width, window_height) = graphics::size(ctx);
+   graphics::set_screen_coordinates(
+      ctx,
+      rect(vector(0.0, 0.0), vector(window_width, window_height)),
+   )
+   .wrap_error()?;
 
-   /// Creates a new game.
-   pub fn new(ctx: &mut Context) -> anyhow::Result<Game> {
-      Ok(Game {
-         state: Some(Box::new(states::game::State::new(ctx)?)),
-      })
-   }
-}
+   // Calculate the alpha (interpolation factor).
+   let alpha = timer::duration_to_f64(timer::remaining_update_time(ctx)) / TIMESTEP;
+   let alpha = alpha as f32;
+   // Draw stuff.
+   state.draw(DrawArgs { ctx, alpha })?;
 
-impl EventHandler<Error> for Game {
-   fn update(&mut self, ctx: &mut Context) -> Result<(), Error> {
-      // Switch states, if needed.
-      let state = self.state.take().unwrap();
-      let state = state.next_state()?;
-      self.state = Some(state);
-
-      // Tick physics and input and all that stuff.
-      if timer::check_update_time(ctx, Game::UPDATE_RATE) {
-         self.state.as_mut().unwrap().update()?;
-      }
-
-      Ok(())
-   }
-
-   fn draw(&mut self, ctx: &mut Context) -> Result<(), Error> {
-      // Resize the window.
-      let (window_width, window_height) = graphics::size(ctx);
-      graphics::set_screen_coordinates(
-         ctx,
-         rect(vector(0.0, 0.0), vector(window_width, window_height)),
-      )
-      .wrap_error()?;
-
-      // Calculate the alpha (interpolation factor).
-      const DELTA_TIME: f64 = 1.0 / (Game::UPDATE_RATE as f64);
-      let alpha = timer::duration_to_f64(timer::remaining_update_time(ctx)) / DELTA_TIME;
-      let alpha = alpha as f32;
-      // Draw stuff.
-      self.state.as_mut().unwrap().draw(DrawArgs { ctx, alpha })?;
-
-      graphics::present(ctx).wrap_error()
-   }
+   graphics::present(ctx).wrap_error()
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -79,9 +71,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       .build()
       .context("could not create ggez::Context")?;
 
-   let game = Game::new(&mut ctx).context("could not load game")?;
+   let state = states::game::State::new(&mut ctx)?;
+   let mut state: Option<Box<dyn GameState>> = Some(Box::new(state));
+   let mut input = Input::new();
 
-   event::run(ctx, event_loop, game)
+   event_loop.run(move |mut event, _, control_flow| {
+      *control_flow = ControlFlow::Poll;
+
+      event::process_event(&mut ctx, &mut event);
+      match event {
+         Event::WindowEvent { event, .. } => match event {
+            WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+            event => input.process_event(event),
+         },
+         Event::MainEventsCleared => {
+            ctx.timer_context.tick();
+
+            let result = update(&mut ctx, &mut state, &mut input)
+               .and_then(|_| draw(&mut ctx, state.as_deref_mut().unwrap()));
+            if let Err(error) = result {
+               *control_flow = ControlFlow::Exit;
+               eprintln!("{:?}", error.0);
+            }
+         }
+         _ => (),
+      }
+   })
 }
 
 // This hackishness is needed because ggez requires that all errors implement std::error::Error,

@@ -9,10 +9,12 @@ use std::any::Any;
 
 use ggez::Context;
 
+use crate::input::Input;
+
 /// A game state.
 pub trait GameState: Any {
    /// Updates physics and processes input.
-   fn update(&mut self) -> anyhow::Result<()>;
+   fn update(&mut self, input: &Input) -> anyhow::Result<()>;
 
    /// Draws a single frame of animation.
    fn draw(&mut self, args: DrawArgs) -> anyhow::Result<()>;

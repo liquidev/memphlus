@@ -28,7 +28,11 @@ impl Physics {
          gravity,
          rigid_bodies: RigidBodySet::new(),
          colliders: ColliderSet::new(),
-         parameters: IntegrationParameters::default(),
+         parameters: IntegrationParameters {
+            dt: (crate::TIMESTEP / 2.0) as f32,
+            erp: 1.0,
+            ..IntegrationParameters::default()
+         },
          pipeline: PhysicsPipeline::new(),
          island_manager: IslandManager::new(),
          broad_phase: BroadPhase::new(),
@@ -40,18 +44,21 @@ impl Physics {
 
    /// Steps the physics state.
    pub fn step(&mut self) {
-      self.pipeline.step(
-         &mint(self.gravity),
-         &self.parameters,
-         &mut self.island_manager,
-         &mut self.broad_phase,
-         &mut self.narrow_phase,
-         &mut self.rigid_bodies,
-         &mut self.colliders,
-         &mut self.joints,
-         &mut self.ccd_solver,
-         &(),
-         &(),
-      )
+      // Perform two steps to hopefully make penetrations less obvious.
+      for _ in 0..2 {
+         self.pipeline.step(
+            &mint(self.gravity),
+            &self.parameters,
+            &mut self.island_manager,
+            &mut self.broad_phase,
+            &mut self.narrow_phase,
+            &mut self.rigid_bodies,
+            &mut self.colliders,
+            &mut self.joints,
+            &mut self.ccd_solver,
+            &(),
+            &(),
+         )
+      }
    }
 }

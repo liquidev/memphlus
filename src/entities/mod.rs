@@ -5,12 +5,15 @@ use glam::Vec2;
 use hecs::World;
 
 use crate::common::Transform;
+use crate::input::Input;
 use crate::physics::Physics;
 
+use self::interpolation::tick_interpolation;
 use self::physics::tick_physics;
 use self::player::Player;
 
 pub mod colliders;
+pub mod interpolation;
 pub mod physics;
 pub mod player;
 
@@ -29,9 +32,10 @@ impl Default for Position {
 pub struct Size(pub Vec2);
 
 /// Ticks all the systems.
-pub fn tick_systems(world: &mut World, physics: &mut Physics) {
-   Player::tick_controls(world, physics);
+pub fn tick_systems(world: &mut World, physics: &mut Physics, input: &Input) {
+   Player::tick_controls(world, physics, input);
    tick_physics(world, physics);
+   tick_interpolation(world);
 }
 
 /// Draws with all the systems.
@@ -39,7 +43,8 @@ pub fn draw_systems(
    ctx: &mut Context,
    world: &mut World,
    transform: Transform,
+   alpha: f32,
 ) -> anyhow::Result<()> {
-   Player::draw(ctx, world, transform)?;
+   Player::draw(ctx, world, transform, alpha)?;
    Ok(())
 }
