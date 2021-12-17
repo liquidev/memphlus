@@ -10,7 +10,8 @@ use crate::physics::Physics;
 use self::physics::tick_physics;
 use self::player::Player;
 
-mod physics;
+pub mod colliders;
+pub mod physics;
 pub mod player;
 
 /// The position component.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="7" nextobjectid="18">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="8" nextobjectid="24">
  <editorsettings>
   <chunksize width="8" height="8"/>
  </editorsettings>
@@ -68,18 +68,25 @@
 </chunk>
   </data>
  </layer>
- <objectgroup id="6" name="entities" locked="1">
+ <objectgroup color="#058ef0" id="7" name="colliders" opacity="0.35">
+  <object id="18" type="collider" x="16" y="160" width="96" height="32"/>
+  <object id="19" type="collider" x="176" y="160" width="128" height="32"/>
+  <object id="21" template="templates/collider_rect.tx" x="96" y="64" width="96" height="16"/>
+  <object id="22" template="templates/collider_rect.tx" x="240" y="64" width="16" height="48"/>
+  <object id="23" template="templates/collider_rect.tx" x="0" y="64" width="16" height="96"/>
+ </objectgroup>
+ <objectgroup id="6" name="entities">
   <object id="11" type="player" x="64" y="128">
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="4" name="death_zone">
+ <objectgroup id="4" name="death_zone" locked="1">
   <object id="7" template="templates/out_of_bounds.tx" x="-656" y="-256" width="552" height="756"/>
   <object id="8" type="out_of_bounds" x="-656" y="-720" width="1280" height="560"/>
   <object id="9" type="out_of_bounds" x="-656" y="368" width="1280" height="656"/>
   <object id="10" type="out_of_bounds" x="560" y="-720" width="736" height="1744"/>
  </objectgroup>
- <objectgroup color="#ffc0c0" id="2" name="zones">
+ <objectgroup color="#ffc0c0" id="2" name="zones" locked="1">
   <object id="3" template="templates/zone_platformer.tx" x="0" y="0" width="288" height="272"/>
   <object id="14" template="templates/zone_deadly.tx" x="177.075" y="45.7716" width="79.6354" height="52.1676" rotation="9.2494"/>
  </objectgroup>

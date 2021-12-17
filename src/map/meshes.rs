@@ -6,7 +6,7 @@ use glam::Vec2;
 use crate::assets::RemappableColors;
 use crate::common::{colored_vertex, rect, vector, Axis, ColorOps, RectCorners};
 
-use super::{Side, Sides};
+use super::tiles::{Side, Sides};
 
 pub struct TileMeshes;
 

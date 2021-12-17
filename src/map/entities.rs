@@ -2,11 +2,12 @@
 
 use std::str::FromStr;
 
-use hecs::World;
+use hecs::{Entity, World};
 use serde::de::IntoDeserializer;
 use serde::Deserialize;
 
-use crate::common::vector;
+use crate::common::{rect, vector};
+use crate::entities::colliders::RectCollider;
 use crate::entities::player::Player;
 use crate::physics::Physics;
 use crate::tiled;
@@ -18,6 +19,7 @@ use super::{Layer, Map};
 #[serde(rename_all = "snake_case")]
 enum EntityKind {
    Player,
+   Collider,
 }
 
 impl FromStr for EntityKind {
@@ -55,6 +57,14 @@ impl Map {
       let position = vector(data.x, data.y) / Self::tile_size();
       let _ = match kind {
          EntityKind::Player => Player::spawn(world, physics, position),
+         EntityKind::Collider => Self::spawn_collider(data, world, physics),
       };
+   }
+
+   /// Spawns an appropriate collider entity.
+   fn spawn_collider(data: &tiled::Object, world: &mut World, physics: &mut Physics) -> Entity {
+      let position = vector(data.x, data.y) / Self::tile_size();
+      let size = vector(data.width, data.height) / Self::tile_size();
+      RectCollider::spawn(world, physics, rect(position, size))
    }
 }

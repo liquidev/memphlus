@@ -62,6 +62,17 @@ impl RectCorners for Rect {
    }
 }
 
+/// Functions for returning extra points in a rectangle.
+pub trait RectPoints {
+   fn center_point(&self) -> Vec2;
+}
+
+impl RectPoints for Rect {
+   fn center_point(&self) -> Vec2 {
+      vector(self.x + self.w / 2.0, self.y + self.h / 2.0)
+   }
+}
+
 /// Extra color operations.
 pub trait ColorOps {
    fn with_alpha(&self, a: f32) -> Self;
