@@ -97,6 +97,7 @@ impl Player {
          let position = position.lerp(alpha);
          let rect = rect(position - size / 2.0, size);
          let mesh = MeshBuilder::new()
+            .rectangle(DrawMode::fill(), rect, RemappableColors::BACKGROUND)?
             .rectangle(DrawMode::stroke(0.1), rect, RemappableColors::FOREGROUND)?
             .build(ctx)?;
          graphics::draw(ctx, &mesh, DrawParam::new().transform(transform))?;
@@ -121,7 +122,6 @@ impl Player {
          .build();
       let collider =
          physics.colliders.insert_with_parent(collider, body, &mut physics.rigid_bodies);
-      dbg!(collider);
 
       world.spawn((
          Player,

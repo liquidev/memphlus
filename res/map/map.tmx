@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="8" nextobjectid="26">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="8" nextobjectid="27">
  <editorsettings>
   <chunksize width="8" height="8"/>
  </editorsettings>
@@ -63,6 +63,7 @@
   <object id="19" type="collider" x="176" y="160" width="128" height="32"/>
   <object id="23" template="templates/collider_rect.tx" x="0" y="64" width="16" height="96"/>
   <object id="25" template="templates/collider_rect.tx" x="112" y="176" width="64" height="16"/>
+  <object id="26" template="templates/collider_rect.tx" x="208" y="48" width="16" height="64"/>
  </objectgroup>
  <objectgroup id="6" name="entities">
   <object id="11" name="Player" type="player" x="64" y="128">
