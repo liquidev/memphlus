@@ -3,7 +3,6 @@
 use ggez::Context;
 use glam::Vec2;
 use hecs::World;
-use rapier2d::prelude::RigidBodyHandle;
 
 use crate::common::Transform;
 use crate::physics::Physics;

@@ -12,9 +12,10 @@ use std::str::FromStr;
 use anyhow::Context;
 use arrayvec::ArrayVec;
 use bitflags::bitflags;
+use ggez::graphics::Mesh;
 use glam::Vec2;
 use hecs::World;
-use rapier2d::prelude::ColliderBuilder;
+use rapier2d::prelude::{ColliderBuilder, ColliderHandle};
 use serde::de::IntoDeserializer;
 use serde::{Deserialize, Serialize};
 
@@ -209,6 +210,8 @@ impl TryFrom<tiled::Tileset> for Tileset {
 /// A chunk of tiles.
 pub struct Chunk {
    tiles: [TileId; Self::LENGTH],
+   mesh: Option<Mesh>,
+   colliders: Vec<ColliderHandle>,
 }
 
 impl Chunk {
@@ -221,6 +224,8 @@ impl Chunk {
    pub fn from_tile_id(id: TileId) -> Self {
       Self {
          tiles: [id; Self::LENGTH],
+         mesh: None,
+         colliders: Vec::new(),
       }
    }
 

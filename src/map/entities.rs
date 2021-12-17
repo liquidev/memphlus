@@ -8,7 +8,6 @@ use serde::Deserialize;
 
 use crate::common::vector;
 use crate::entities::player::Player;
-use crate::entities::Position;
 use crate::physics::Physics;
 use crate::tiled;
 

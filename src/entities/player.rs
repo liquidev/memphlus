@@ -4,13 +4,13 @@ use ggez::graphics::{self, DrawMode, DrawParam, MeshBuilder};
 use ggez::Context;
 use glam::Vec2;
 use hecs::{Entity, World};
-use rapier2d::prelude::RigidBodyBuilder;
+use rapier2d::prelude::{ColliderBuilder, RigidBodyBuilder};
 
 use crate::assets::RemappableColors;
 use crate::common::{mint, rect, vector, Transform};
 use crate::physics::Physics;
 
-use super::physics::RigidBody;
+use super::physics::{Collider, RigidBody};
 use super::{Position, Size};
 
 /// Marker component for marking that an entity can be controlled using platformer controls.
@@ -39,14 +39,21 @@ impl Player {
 
    /// Spawns a new player into the world.
    pub fn spawn(world: &mut World, physics: &mut Physics, position: Vec2) -> Entity {
-      let size = Size(vector(0.8, 0.8));
-      let body = RigidBodyBuilder::new_dynamic().translation(mint(position)).build();
+      let size = vector(0.8, 0.8);
+
+      let body =
+         RigidBodyBuilder::new_dynamic().translation(mint(position)).lock_rotations().build();
       let body = physics.rigid_bodies.insert(body);
+      let collider = ColliderBuilder::cuboid(size.x, size.y).build();
+      let collider =
+         physics.colliders.insert_with_parent(collider, body, &mut physics.rigid_bodies);
+
       world.spawn((
          Player,
          Position(position),
-         size,
+         Size(size),
          RigidBody(body),
+         Collider(collider),
          Platformer,
       ))
    }

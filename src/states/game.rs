@@ -21,7 +21,7 @@ pub struct State {
 impl State {
    pub fn new(ctx: &mut Context) -> anyhow::Result<Self> {
       let mut world = World::new();
-      let mut physics = Physics::new(Vec2::new(0.0, 1.0));
+      let mut physics = Physics::new(Vec2::new(0.0, 20.0));
       let map = Map::load_into_world_from_json(
          &mut world,
          &mut physics,

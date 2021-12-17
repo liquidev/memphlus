@@ -1,17 +1,18 @@
 //! Components and systems for handling physics objects.
 
-use glam::Vec2;
 use hecs::World;
-use mint::IntoMint;
-use rapier2d::prelude::RigidBodyHandle;
+use rapier2d::prelude::{ColliderHandle, RigidBodyHandle};
 
-use crate::common::{mint, vector};
+use crate::common::vector;
 use crate::physics::Physics;
 
 use super::Position;
 
 /// The rigid body component.
 pub struct RigidBody(pub RigidBodyHandle);
+
+/// The collider component.
+pub struct Collider(pub ColliderHandle);
 
 /// Ticks physics objects, such that their Position component matches the actual position of
 /// the body.
