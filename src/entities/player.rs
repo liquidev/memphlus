@@ -25,6 +25,7 @@ use super::{Position, Size};
 pub struct Platformer {
    remaining_jump_ticks: u8,
    jump_buffer: u8,
+   air_time: u8,
 }
 
 impl Platformer {
@@ -32,6 +33,7 @@ impl Platformer {
       Self {
          remaining_jump_ticks: 0,
          jump_buffer: 0,
+         air_time: 0,
       }
    }
 }
@@ -51,6 +53,8 @@ impl Player {
       // The number of ticks of leeway during which one can be falling down and still jump when
       // they land.
       const JUMP_LEEWAY: u8 = 8;
+      // The number of ticks during which you can still jump after falling down a ledge.
+      const COYOTE_TIME: u8 = 10;
 
       for (_id, (_, platformer, &RigidBody(body_handle))) in
          world.query_mut::<(&Player, &mut Platformer, &RigidBody)>()
@@ -68,14 +72,16 @@ impl Player {
          if input.button_just_pressed(Button::Jump) {
             platformer.jump_buffer = JUMP_LEEWAY;
          }
-         if platformer.jump_buffer > 0 && Self::is_on_ground(physics, body_handle) {
+         if Self::is_on_ground(physics, body_handle) {
+            platformer.air_time = COYOTE_TIME;
+         }
+         let body = &mut physics.rigid_bodies[body_handle];
+         if platformer.jump_buffer > 0 && platformer.air_time > 0 {
             platformer.remaining_jump_ticks = JUMP_SUSTAIN;
             platformer.jump_buffer = 0;
-            let body = &mut physics.rigid_bodies[body_handle];
             let velocity = *body.linvel();
             body.set_linvel(mint(vector(velocity.x, 0.0)), true);
          }
-         platformer.jump_buffer = platformer.jump_buffer.saturating_sub(1);
 
          let body = &mut physics.rigid_bodies[body_handle];
          if input.button_down(Button::Jump) && platformer.remaining_jump_ticks > 0 {
@@ -86,6 +92,9 @@ impl Player {
          if !input.button_down(Button::Jump) {
             platformer.remaining_jump_ticks = 0;
          }
+
+         platformer.air_time = platformer.air_time.saturating_sub(1);
+         platformer.jump_buffer = platformer.jump_buffer.saturating_sub(1);
          platformer.remaining_jump_ticks = platformer.remaining_jump_ticks.saturating_sub(1);
 
          let velocity = *body.linvel();
