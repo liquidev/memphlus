@@ -8,15 +8,16 @@ use tetra::Context;
 
 use crate::common::vector;
 use crate::meshes::MeshBuilder;
+use crate::transform::{self, TransformStack};
 
 use super::tiles::TileKind;
 use super::{Chunk, Layer, Map, TileMeshes, Tileset};
 
 impl Map {
    /// Draws the map to the screen.
-   pub fn draw(&mut self, ctx: &mut Context) -> anyhow::Result<()> {
+   pub fn draw(&mut self, ctx: &mut Context, tstack: &mut TransformStack) -> anyhow::Result<()> {
       for layer in &mut self.layers {
-         layer.draw(&self.tileset, ctx)?;
+         layer.draw(&self.tileset, ctx, tstack)?;
       }
       Ok(())
    }
@@ -45,7 +46,7 @@ impl Chunk {
                   SolidTopLeft | SolidTop | SolidTopRight | SolidRight | SolidBottomRight
                   | SolidBottom | SolidBottomLeft | SolidLeft | SolidVTop | SolidVMiddle
                   | SolidVBottom | SolidHLeft | SolidHCenter | SolidHRight | SolidTile => {
-                     TileMeshes::build_sides(&mut mesh, center, kind.try_into().unwrap())?
+                     TileMeshes::build_sides(&mut mesh, center, kind.try_into().unwrap())
                   }
                   SolidTopFadeLeft | SolidBottomFadeLeft | SolidLeftFadeBottom
                   | SolidRightFadeBottom | SolidTopFadeRight | SolidBottomFadeRight
@@ -54,9 +55,15 @@ impl Chunk {
                      center,
                      kind.side().unwrap(),
                      Self::fade_opacities(kind),
-                  )?,
+                  ),
+                  SolidCornerTopLeft
+                  | SolidCornerTopRight
+                  | SolidCornerBottomRight
+                  | SolidCornerBottomLeft => {
+                     TileMeshes::build_corner(&mut mesh, center, kind.corner().unwrap())
+                  }
                   SpikesUp | SpikesRight | SpikesDown | SpikesLeft => {
-                     TileMeshes::build_spikes(&mut mesh, center, kind.spike_direction().unwrap())?
+                     TileMeshes::build_spikes(&mut mesh, center, kind.spike_direction().unwrap())
                   }
                   _ => block_has_vertices = false,
                }
@@ -95,9 +102,14 @@ impl Chunk {
 }
 
 impl Layer {
-   fn draw(&mut self, tileset: &Tileset, ctx: &mut Context) -> anyhow::Result<()> {
+   fn draw(
+      &mut self,
+      tileset: &Tileset,
+      ctx: &mut Context,
+      tstack: &mut TransformStack,
+   ) -> anyhow::Result<()> {
       match self {
-         Layer::Tile { chunks } => Self::draw_chunks(chunks, tileset, ctx),
+         Layer::Tile { chunks } => Self::draw_chunks(chunks, tileset, ctx, tstack),
          Layer::Object => Ok(()),
       }
    }
@@ -106,12 +118,15 @@ impl Layer {
       chunks: &mut HashMap<(u32, u32), Chunk>,
       tileset: &Tileset,
       ctx: &mut Context,
+      tstack: &mut TransformStack,
    ) -> anyhow::Result<()> {
       for (&(x, y), chunk) in chunks {
+         tstack.save(ctx);
          let offset = vector(x as f32, y as f32) * vector(Chunk::SIZE as f32, Chunk::SIZE as f32);
-         // let transform = transform.translate(offset);
+         transform::translate(ctx, offset);
 
          chunk.draw(tileset, ctx)?;
+         tstack.restore(ctx);
       }
       Ok(())
    }

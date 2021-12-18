@@ -6,7 +6,7 @@ use crate::assets::RemappableColors;
 use crate::common::{colored_vertex, rect, vector, Axis, Rect};
 use crate::meshes::MeshBuilder;
 
-use super::tiles::{Side, Sides};
+use super::tiles::{Corner, Side, Sides};
 
 pub struct TileMeshes;
 
@@ -30,11 +30,7 @@ impl TileMeshes {
    }
 
    /// Builds the mesh for axis-aligned sides.
-   pub fn build_sides(
-      builder: &mut MeshBuilder,
-      position: Vec2<f32>,
-      sides: Sides,
-   ) -> anyhow::Result<()> {
+   pub fn build_sides(builder: &mut MeshBuilder, position: Vec2<f32>, sides: Sides) {
       if sides.contains(Sides::TOP) {
          let rect = Self::side_rect(position, Side::Top);
          builder.rectangle(rect, RemappableColors::FOREGROUND);
@@ -51,7 +47,21 @@ impl TileMeshes {
          let rect = Self::side_rect(position, Side::Right);
          builder.rectangle(rect, RemappableColors::FOREGROUND);
       }
-      Ok(())
+   }
+
+   /// Builds the mesh for corners.
+   pub fn build_corner(builder: &mut MeshBuilder, position: Vec2<f32>, corner: Corner) {
+      let size = vector(Self::THICKNESS, Self::THICKNESS);
+      let position = position
+         + match corner {
+            Corner::TopLeft => vector(0.0, 0.0),
+            Corner::TopRight => vector(1.0 - size.x, 0.0),
+            Corner::BottomRight => vector(1.0 - size.x, 1.0 - size.y),
+            Corner::BottomLeft => vector(0.0, 1.0 - size.y),
+         }
+         - vector(0.5, 0.5);
+      let rect = rect(position, size);
+      builder.rectangle(rect, RemappableColors::FOREGROUND);
    }
 
    /// Builds the mesh for a fading side. The provided set of sides must contain one element.
@@ -60,7 +70,7 @@ impl TileMeshes {
       position: Vec2<f32>,
       side: Side,
       (first_opacity, second_opacity): (f32, f32),
-   ) -> anyhow::Result<()> {
+   ) {
       let rect = Self::side_rect(position, side);
       let colors = match side.axis() {
          Axis::X => [
@@ -85,15 +95,10 @@ impl TileMeshes {
          ],
          &[0, 1, 2, 2, 3, 0],
       );
-      Ok(())
    }
 
    /// Builds spikes pointing at the given side.
-   pub fn build_spikes(
-      builder: &mut MeshBuilder,
-      position: Vec2<f32>,
-      side: Side,
-   ) -> anyhow::Result<()> {
+   pub fn build_spikes(builder: &mut MeshBuilder, position: Vec2<f32>, side: Side) {
       let vertices = [
          vector(-0.5, 0.5),
          vector(-0.25, 0.0),
@@ -112,6 +117,5 @@ impl TileMeshes {
          colored_vertex(position + offset, RemappableColors::ACCENT)
       });
       builder.raw(&vertices, &[0, 1, 2, 2, 3, 4]);
-      Ok(())
    }
 }

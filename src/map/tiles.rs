@@ -31,6 +31,10 @@ pub enum TileKind {
    SolidHCenter,
    SolidHRight,
    SolidTile,
+   SolidCornerTopLeft,
+   SolidCornerTopRight,
+   SolidCornerBottomRight,
+   SolidCornerBottomLeft,
    SolidTopFadeLeft,
    SolidTopFadeRight,
    SolidBottomFadeLeft,
@@ -84,6 +88,16 @@ impl TileKind {
          Self::SpikesRight => Some(Side::Right),
          Self::SpikesDown => Some(Side::Bottom),
          Self::SpikesLeft => Some(Side::Left),
+         _ => None,
+      }
+   }
+
+   pub fn corner(&self) -> Option<Corner> {
+      match self {
+         Self::SolidCornerTopLeft => Some(Corner::TopLeft),
+         Self::SolidCornerTopRight => Some(Corner::TopRight),
+         Self::SolidCornerBottomRight => Some(Corner::BottomRight),
+         Self::SolidCornerBottomLeft => Some(Corner::BottomLeft),
          _ => None,
       }
    }
@@ -154,4 +168,13 @@ impl TryFrom<TileKind> for Sides {
          _ => Err(NotAxisAligned),
       }
    }
+}
+
+/// Tile corners.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Corner {
+   TopLeft,
+   TopRight,
+   BottomRight,
+   BottomLeft,
 }

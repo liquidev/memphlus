@@ -35,7 +35,7 @@ impl Physics {
          joints: JointSet::new(),
 
          parameters: IntegrationParameters {
-            dt: (60.0 / 2.0),
+            dt: ((1.0 / 60.0) / 2.0),
             erp: 1.0,
             ..IntegrationParameters::default()
          },
@@ -53,19 +53,19 @@ impl Physics {
    pub fn step(&mut self) {
       // Perform two steps to hopefully make penetrations less obvious.
       for _ in 0..2 {
-         // self.pipeline.step(
-         //    &self.gravity.nalgebra(),
-         //    &self.parameters,
-         //    &mut self.island_manager,
-         //    &mut self.broad_phase,
-         //    &mut self.narrow_phase,
-         //    &mut self.rigid_bodies,
-         //    &mut self.colliders,
-         //    &mut self.joints,
-         //    &mut self.ccd_solver,
-         //    &(),
-         //    &(),
-         // )
+         self.pipeline.step(
+            &self.gravity.nalgebra(),
+            &self.parameters,
+            &mut self.island_manager,
+            &mut self.broad_phase,
+            &mut self.narrow_phase,
+            &mut self.rigid_bodies,
+            &mut self.colliders,
+            &mut self.joints,
+            &mut self.ccd_solver,
+            &(),
+            &(),
+         )
       }
       self.query.update(&self.island_manager, &self.rigid_bodies, &self.colliders);
    }

@@ -37,8 +37,12 @@
  <tile id="34" type="solid_top_fade_right"/>
  <tile id="35" type="solid_bottom_fade_left"/>
  <tile id="36" type="solid_bottom_fade_right"/>
+ <tile id="37" type="solid_corner_bottom_right"/>
+ <tile id="38" type="solid_corner_bottom_left"/>
  <tile id="41" type="solid_left_fade_top"/>
  <tile id="42" type="solid_right_fade_top"/>
+ <tile id="45" type="solid_corner_top_right"/>
+ <tile id="46" type="solid_corner_top_left"/>
  <tile id="49" type="solid_left_fade_bottom"/>
  <tile id="50" type="solid_right_fade_bottom"/>
  <tile id="63" type="barrier"/>

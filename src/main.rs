@@ -9,12 +9,12 @@ mod physics;
 mod state;
 mod states;
 mod tiled;
+mod transform;
 
 use anyhow::Context as AnyhowContext;
 use input::Input;
 use state::GameState;
-use tetra::{graphics, Context, ContextBuilder};
-use vek::{Mat4, Vec3};
+use tetra::{Context, ContextBuilder};
 
 struct Game {
    state: Option<Box<dyn GameState>>,
@@ -35,7 +35,6 @@ impl tetra::State<anyhow::Error> for Game {
    }
 
    fn draw(&mut self, ctx: &mut Context) -> anyhow::Result<()> {
-      graphics::set_transform_matrix(ctx, Mat4::scaling_3d(Vec3::new(32.0, 32.0, 1.0)));
       self.state.as_mut().unwrap().draw(ctx)?;
       Ok(())
    }
@@ -44,6 +43,7 @@ impl tetra::State<anyhow::Error> for Game {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
    let mut ctx = ContextBuilder::new("mem.pHlus", 1280, 720)
       .resizable(true)
+      .show_mouse(true)
       .build()
       .context("could not create ggez::Context")?;
 
