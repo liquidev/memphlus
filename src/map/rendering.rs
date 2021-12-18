@@ -2,19 +2,21 @@
 
 use std::collections::HashMap;
 
-use ggez::graphics::{self, DrawParam, Mesh, MeshBuilder};
-use ggez::Context;
+use tetra::graphics::mesh::Mesh;
+use tetra::graphics::DrawParams;
+use tetra::Context;
 
-use crate::common::{vector, Transform};
+use crate::common::vector;
+use crate::meshes::MeshBuilder;
 
 use super::tiles::TileKind;
 use super::{Chunk, Layer, Map, TileMeshes, Tileset};
 
 impl Map {
    /// Draws the map to the screen.
-   pub fn draw(&mut self, ctx: &mut Context, transform: Transform) -> anyhow::Result<()> {
+   pub fn draw(&mut self, ctx: &mut Context) -> anyhow::Result<()> {
       for layer in &mut self.layers {
-         layer.draw(&self.tileset, ctx, transform.into())?;
+         layer.draw(&self.tileset, ctx)?;
       }
       Ok(())
    }
@@ -70,14 +72,9 @@ impl Chunk {
       Ok(self.mesh.as_ref())
    }
 
-   fn draw(
-      &mut self,
-      tileset: &Tileset,
-      ctx: &mut Context,
-      transform: Transform,
-   ) -> anyhow::Result<()> {
+   fn draw(&mut self, tileset: &Tileset, ctx: &mut Context) -> anyhow::Result<()> {
       if let Some(mesh) = self.get_or_generate_mesh(tileset, ctx)? {
-         graphics::draw(ctx, mesh, DrawParam::default().transform(transform))?;
+         mesh.draw(ctx, DrawParams::new())
       }
 
       Ok(())
@@ -98,14 +95,9 @@ impl Chunk {
 }
 
 impl Layer {
-   fn draw(
-      &mut self,
-      tileset: &Tileset,
-      ctx: &mut Context,
-      transform: Transform,
-   ) -> anyhow::Result<()> {
+   fn draw(&mut self, tileset: &Tileset, ctx: &mut Context) -> anyhow::Result<()> {
       match self {
-         Layer::Tile { chunks } => Self::draw_chunks(chunks, tileset, ctx, transform),
+         Layer::Tile { chunks } => Self::draw_chunks(chunks, tileset, ctx),
          Layer::Object => Ok(()),
       }
    }
@@ -114,13 +106,12 @@ impl Layer {
       chunks: &mut HashMap<(u32, u32), Chunk>,
       tileset: &Tileset,
       ctx: &mut Context,
-      transform: Transform,
    ) -> anyhow::Result<()> {
       for (&(x, y), chunk) in chunks {
          let offset = vector(x as f32, y as f32) * vector(Chunk::SIZE as f32, Chunk::SIZE as f32);
-         let transform = transform.translate(offset);
+         // let transform = transform.translate(offset);
 
-         chunk.draw(tileset, ctx, transform)?;
+         chunk.draw(tileset, ctx)?;
       }
       Ok(())
    }

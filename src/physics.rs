@@ -1,15 +1,15 @@
 //! An easy to use wrapper over Rapier.
 
-use glam::Vec2;
 use rapier2d::prelude::{
    BroadPhase, CCDSolver, ColliderSet, IntegrationParameters, IslandManager, JointSet, NarrowPhase,
    PhysicsPipeline, QueryPipeline, RigidBodySet,
 };
+use tetra::math::Vec2;
 
-use crate::common::mint;
+use crate::common::ToNalgebraVector2;
 
 pub struct Physics {
-   pub gravity: Vec2,
+   pub gravity: Vec2<f32>,
 
    pub rigid_bodies: RigidBodySet,
    pub colliders: ColliderSet,
@@ -27,7 +27,7 @@ pub struct Physics {
 
 impl Physics {
    /// Creates a new bundle of physics state, with the specified gravational force vector.
-   pub fn new(gravity: Vec2) -> Self {
+   pub fn new(gravity: Vec2<f32>) -> Self {
       Self {
          gravity,
          rigid_bodies: RigidBodySet::new(),
@@ -35,7 +35,7 @@ impl Physics {
          joints: JointSet::new(),
 
          parameters: IntegrationParameters {
-            dt: (crate::TIMESTEP / 2.0) as f32,
+            dt: (60.0 / 2.0),
             erp: 1.0,
             ..IntegrationParameters::default()
          },
@@ -53,19 +53,19 @@ impl Physics {
    pub fn step(&mut self) {
       // Perform two steps to hopefully make penetrations less obvious.
       for _ in 0..2 {
-         self.pipeline.step(
-            &mint(self.gravity),
-            &self.parameters,
-            &mut self.island_manager,
-            &mut self.broad_phase,
-            &mut self.narrow_phase,
-            &mut self.rigid_bodies,
-            &mut self.colliders,
-            &mut self.joints,
-            &mut self.ccd_solver,
-            &(),
-            &(),
-         )
+         // self.pipeline.step(
+         //    &self.gravity.nalgebra(),
+         //    &self.parameters,
+         //    &mut self.island_manager,
+         //    &mut self.broad_phase,
+         //    &mut self.narrow_phase,
+         //    &mut self.rigid_bodies,
+         //    &mut self.colliders,
+         //    &mut self.joints,
+         //    &mut self.ccd_solver,
+         //    &(),
+         //    &(),
+         // )
       }
       self.query.update(&self.island_manager, &self.rigid_bodies, &self.colliders);
    }

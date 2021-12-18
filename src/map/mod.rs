@@ -10,9 +10,9 @@ use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
 use anyhow::Context;
-use ggez::graphics::Mesh;
-use glam::Vec2;
 use hecs::World;
+use tetra::graphics::mesh::Mesh;
+use tetra::math::Vec2;
 
 use crate::common::vector;
 use crate::physics::Physics;
@@ -110,7 +110,7 @@ pub struct Map {
 impl Map {
    /// Returns the map's tile size. Note that this is not the actual size things are rendered and
    /// simulated at, but rather the size of tiles that should be used in the Tiled map.
-   pub fn tile_size() -> Vec2 {
+   pub fn tile_size() -> Vec2<f32> {
       vector(16.0, 16.0)
    }
 

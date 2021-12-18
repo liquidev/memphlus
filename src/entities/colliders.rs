@@ -1,10 +1,9 @@
 //! Static colliders.
 
-use ggez::graphics::Rect;
 use hecs::{Entity, World};
 use rapier2d::prelude::{ColliderBuilder, InteractionGroups, RigidBodyBuilder};
 
-use crate::common::{mint, RectPoints};
+use crate::common::{Rect, RectPoints, ToNalgebraVector2};
 use crate::physics::{CollisionGroups, Physics};
 
 use super::physics::{Collider, RigidBody};
@@ -15,9 +14,9 @@ pub struct RectCollider;
 impl RectCollider {
    /// Spawns a new rectangular collider into the world.
    pub fn spawn(world: &mut World, physics: &mut Physics, rect: Rect) -> Entity {
-      let body = RigidBodyBuilder::new_static().translation(mint(rect.center_point())).build();
+      let body = RigidBodyBuilder::new_static().translation(rect.center_point().nalgebra()).build();
       let body = physics.rigid_bodies.insert(body);
-      let collider = ColliderBuilder::cuboid(rect.w / 2.0, rect.h / 2.0)
+      let collider = ColliderBuilder::cuboid(rect.width / 2.0, rect.height / 2.0)
          .collision_groups(InteractionGroups::new(
             CollisionGroups::SOLIDS,
             CollisionGroups::ALL,

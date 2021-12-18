@@ -1,10 +1,9 @@
 //! Entities and components.
 
-use ggez::Context;
-use glam::Vec2;
 use hecs::World;
+use tetra::math::Vec2;
+use tetra::Context;
 
-use crate::common::Transform;
 use crate::input::Input;
 use crate::physics::Physics;
 
@@ -18,7 +17,7 @@ pub mod physics;
 pub mod player;
 
 /// The position component.
-pub struct Position(pub Vec2);
+pub struct Position(pub Vec2<f32>);
 
 /// The default position is `(0.0, 0.0)`. This is useful when the position is to be updated by the
 /// physics system.
@@ -29,22 +28,17 @@ impl Default for Position {
 }
 
 /// The size component.
-pub struct Size(pub Vec2);
+pub struct Size(pub Vec2<f32>);
 
 /// Ticks all the systems.
-pub fn tick_systems(world: &mut World, physics: &mut Physics, input: &Input) {
-   Player::tick_controls(world, physics, input);
+pub fn tick_systems(ctx: &mut Context, world: &mut World, physics: &mut Physics, input: &Input) {
+   Player::tick_controls(ctx, world, physics, input);
    tick_physics(world, physics);
    tick_interpolation(world);
 }
 
 /// Draws with all the systems.
-pub fn draw_systems(
-   ctx: &mut Context,
-   world: &mut World,
-   transform: Transform,
-   alpha: f32,
-) -> anyhow::Result<()> {
-   Player::draw(ctx, world, transform, alpha)?;
+pub fn draw_systems(ctx: &mut Context, world: &mut World) -> anyhow::Result<()> {
+   Player::draw(ctx, world)?;
    Ok(())
 }

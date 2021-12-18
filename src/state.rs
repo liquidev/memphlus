@@ -7,25 +7,23 @@
 
 use std::any::Any;
 
-use ggez::Context;
+use tetra::Context;
 
 use crate::input::Input;
 
 /// A game state.
 pub trait GameState: Any {
    /// Updates physics and processes input.
-   fn update(&mut self, input: &Input) -> anyhow::Result<()>;
+   fn update(&mut self, ctx: &mut Context, input: &Input) -> anyhow::Result<()>;
 
    /// Draws a single frame of animation.
-   fn draw(&mut self, args: DrawArgs) -> anyhow::Result<()>;
+   fn draw(&mut self, ctx: &mut Context) -> anyhow::Result<()>;
+
+   /// Called when the window is resized.
+   fn resize(&mut self, ctx: &mut Context, width: u32, height: u32) -> anyhow::Result<()> {
+      Ok(())
+   }
 
    /// Returns the next state to switch to after this one.
    fn next_state(self: Box<Self>) -> anyhow::Result<Box<dyn GameState>>;
-}
-
-pub struct DrawArgs<'ctx> {
-   pub ctx: &'ctx mut Context,
-
-   /// The linear interpolation factor.
-   pub alpha: f32,
 }

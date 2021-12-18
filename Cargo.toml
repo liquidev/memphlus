@@ -11,12 +11,11 @@ arrayvec = "0.7.2"
 bitflags = "1.3.2"
 
 # Game stuff
-ggez = { version = "0.7.0", default_features = false, features = [] }
+tetra = "0.6.7"
 hecs = "0.7.1"
-glam = "0.20.1"
-nalgebra = { version = "0.29.0", features = ["convert-mint"] }
 rapier2d = "0.11.1"
-mint = "0.5.8"
+vek = { version = "0.13.1" }
+nalgebra = { version = "0.29.0" }
 
 # Data formats
 serde = { version = "1.0.131", features = ["derive"] }

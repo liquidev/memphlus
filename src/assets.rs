@@ -1,6 +1,6 @@
 //! Asset loading and bundling.
 
-use ggez::graphics::Color;
+use tetra::graphics::Color;
 
 pub struct RemappableColors;
 

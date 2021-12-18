@@ -1,10 +1,10 @@
 //! Map tile meshes.
 
-use ggez::graphics::{DrawMode, MeshBuilder, Rect};
-use glam::Vec2;
+use tetra::math::Vec2;
 
 use crate::assets::RemappableColors;
-use crate::common::{colored_vertex, rect, vector, Axis, ColorOps, RectCorners};
+use crate::common::{colored_vertex, rect, vector, Axis, Rect};
+use crate::meshes::MeshBuilder;
 
 use super::tiles::{Side, Sides};
 
@@ -14,7 +14,7 @@ impl TileMeshes {
    /// The thickness of tiles.
    const THICKNESS: f32 = 0.1;
 
-   fn side_rect(position: Vec2, side: Side) -> Rect {
+   fn side_rect(position: Vec2<f32>, side: Side) -> Rect {
       match side {
          Side::Top => rect(position - vector(0.5, 0.5), vector(1.0, Self::THICKNESS)),
          Side::Bottom => rect(
@@ -32,24 +32,24 @@ impl TileMeshes {
    /// Builds the mesh for axis-aligned sides.
    pub fn build_sides(
       builder: &mut MeshBuilder,
-      position: Vec2,
+      position: Vec2<f32>,
       sides: Sides,
    ) -> anyhow::Result<()> {
       if sides.contains(Sides::TOP) {
          let rect = Self::side_rect(position, Side::Top);
-         builder.rectangle(DrawMode::fill(), rect, RemappableColors::FOREGROUND)?;
+         builder.rectangle(rect, RemappableColors::FOREGROUND);
       }
       if sides.contains(Sides::LEFT) {
          let rect = Self::side_rect(position, Side::Left);
-         builder.rectangle(DrawMode::fill(), rect, RemappableColors::FOREGROUND)?;
+         builder.rectangle(rect, RemappableColors::FOREGROUND);
       }
       if sides.contains(Sides::BOTTOM) {
          let rect = Self::side_rect(position, Side::Bottom);
-         builder.rectangle(DrawMode::fill(), rect, RemappableColors::FOREGROUND)?;
+         builder.rectangle(rect, RemappableColors::FOREGROUND);
       }
       if sides.contains(Sides::RIGHT) {
          let rect = Self::side_rect(position, Side::Right);
-         builder.rectangle(DrawMode::fill(), rect, RemappableColors::FOREGROUND)?;
+         builder.rectangle(rect, RemappableColors::FOREGROUND);
       }
       Ok(())
    }
@@ -57,7 +57,7 @@ impl TileMeshes {
    /// Builds the mesh for a fading side. The provided set of sides must contain one element.
    pub fn build_fading_side(
       builder: &mut MeshBuilder,
-      position: Vec2,
+      position: Vec2<f32>,
       side: Side,
       (first_opacity, second_opacity): (f32, f32),
    ) -> anyhow::Result<()> {
@@ -84,15 +84,14 @@ impl TileMeshes {
             colored_vertex(rect.bottom_left(), colors[3]),
          ],
          &[0, 1, 2, 2, 3, 0],
-         None,
-      )?;
+      );
       Ok(())
    }
 
    /// Builds spikes pointing at the given side.
    pub fn build_spikes(
       builder: &mut MeshBuilder,
-      position: Vec2,
+      position: Vec2<f32>,
       side: Side,
    ) -> anyhow::Result<()> {
       let vertices = [
@@ -103,7 +102,7 @@ impl TileMeshes {
          vector(0.5, 0.5),
       ]
       .map(|offset| {
-         let [x, y] = offset.to_array();
+         let Vec2 { x, y } = offset;
          let offset = match side {
             Side::Top => vector(x, y),
             Side::Bottom => vector(x, -y),
@@ -112,7 +111,7 @@ impl TileMeshes {
          };
          colored_vertex(position + offset, RemappableColors::ACCENT)
       });
-      builder.raw(&vertices, &[0, 1, 2, 2, 3, 4], None)?;
+      builder.raw(&vertices, &[0, 1, 2, 2, 3, 4]);
       Ok(())
    }
 }

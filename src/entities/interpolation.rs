@@ -1,18 +1,18 @@
 //! Components for smoothing out choppy movement.
 
-use glam::Vec2;
 use hecs::World;
+use tetra::math::Vec2::{self};
 
 use super::Position;
 
 /// A component for interpolating the position of a component over many frames.
 pub struct InterpolatedPosition {
-   pub previous_position: Vec2,
-   pub current_position: Vec2,
+   pub previous_position: Vec2<f32>,
+   pub current_position: Vec2<f32>,
 }
 
 impl InterpolatedPosition {
-   pub fn new(position: Vec2) -> Self {
+   pub fn new(position: Vec2<f32>) -> Self {
       Self {
          previous_position: position,
          current_position: position,
@@ -20,9 +20,9 @@ impl InterpolatedPosition {
    }
 
    /// Linearly interpolates the position according to the given alpha.
-   pub fn lerp(&self, alpha: f32) -> Vec2 {
+   pub fn lerp(&self, alpha: f32) -> Vec2<f32> {
       let alpha = alpha.clamp(0.0, 1.0);
-      self.previous_position.lerp(self.current_position, alpha)
+      Vec2::lerp(self.previous_position, self.current_position, alpha)
    }
 }
 
