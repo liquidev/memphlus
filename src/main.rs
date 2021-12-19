@@ -6,6 +6,7 @@ mod map;
 mod meshes;
 mod palette;
 mod physics;
+mod post_process;
 mod state;
 mod states;
 mod tiled;
