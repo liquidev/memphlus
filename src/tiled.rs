@@ -18,6 +18,7 @@ pub enum PropertyValue {
    Int(i32),
    Float(f32),
    Bool(bool),
+   Object(u32),
 }
 
 /// Storage for properties.
@@ -136,6 +137,7 @@ pub struct Object {
    pub y: f32,
    pub width: f32,
    pub height: f32,
+   pub rotation: f32,
    #[serde(rename = "type")]
    pub kind: String,
    #[serde(default)]

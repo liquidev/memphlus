@@ -10,17 +10,23 @@ use std::any::Any;
 use tetra::Context;
 
 use crate::input::Input;
+use crate::resources::Resources;
 
 /// A game state.
 pub trait GameState: Any {
    /// Updates physics and processes input.
-   fn update(&mut self, ctx: &mut Context, input: &Input) -> anyhow::Result<()>;
+   fn update(
+      &mut self,
+      ctx: &mut Context,
+      resources: &mut Resources,
+      input: &Input,
+   ) -> anyhow::Result<()>;
 
    /// Draws a single frame of animation.
-   fn draw(&mut self, ctx: &mut Context) -> anyhow::Result<()>;
+   fn draw(&mut self, ctx: &mut Context, resources: &mut Resources) -> anyhow::Result<()>;
 
    /// Called when the window is resized.
-   fn resize(&mut self, ctx: &mut Context, width: u32, height: u32) -> anyhow::Result<()> {
+   fn resize(&mut self, _ctx: &mut Context, _width: u32, _height: u32) -> anyhow::Result<()> {
       Ok(())
    }
 

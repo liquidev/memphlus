@@ -5,10 +5,12 @@ use std::str::FromStr;
 use hecs::{Entity, World};
 use serde::de::IntoDeserializer;
 use serde::Deserialize;
+use vek::Mat2;
 
 use crate::common::{rect, vector};
 use crate::entities::colliders::RectCollider;
 use crate::entities::player::Player;
+use crate::entities::zones::{DeadlyZone, PlatformerZone, Zone, Zones};
 use crate::physics::Physics;
 use crate::tiled;
 
@@ -20,6 +22,9 @@ use super::{Layer, Map};
 enum EntityKind {
    Player,
    Collider,
+
+   ZonePlatformer,
+   ZoneDeadly,
 }
 
 impl FromStr for EntityKind {
@@ -39,7 +44,7 @@ impl Map {
    ) -> Layer {
       for object in objects {
          if let Ok(kind) = EntityKind::from_str(&object.kind) {
-            Self::spawn_entity(kind, &object, world, physics);
+            Self::spawn_entity(kind, object, world, physics);
          } else {
             eprintln!("warning: object of unknown kind {:?}", &object.kind);
          }
@@ -50,21 +55,46 @@ impl Map {
    /// Spawns an entity of the given kind into the world.
    fn spawn_entity(
       kind: EntityKind,
-      data: &tiled::Object,
+      data: tiled::Object,
       world: &mut World,
       physics: &mut Physics,
    ) {
-      let position = vector(data.x, data.y) / Self::tile_size();
+      let data = tiled::Object {
+         x: data.x / Map::tile_size().x,
+         y: data.y / Map::tile_size().y,
+         width: data.width / Map::tile_size().x,
+         height: data.height / Map::tile_size().y,
+         rotation: data.rotation / 180.0 * std::f32::consts::PI,
+         ..data
+      };
+      let position = vector(data.x, data.y);
       let _ = match kind {
          EntityKind::Player => Player::spawn(world, physics, position),
-         EntityKind::Collider => Self::spawn_collider(data, world, physics),
+         EntityKind::Collider => Self::spawn_collider(&data, world, physics),
+         EntityKind::ZoneDeadly => Self::spawn_zone(&data, world, physics, DeadlyZone),
+         EntityKind::ZonePlatformer => Self::spawn_zone(&data, world, physics, PlatformerZone),
       };
    }
 
    /// Spawns an appropriate collider entity.
    fn spawn_collider(data: &tiled::Object, world: &mut World, physics: &mut Physics) -> Entity {
-      let position = vector(data.x, data.y) / Self::tile_size();
-      let size = vector(data.width, data.height) / Self::tile_size();
+      let position = vector(data.x, data.y);
+      let size = vector(data.width, data.height);
       RectCollider::spawn(world, physics, rect(position, size))
+   }
+
+   /// Spawns a zone of the given kind.
+   fn spawn_zone(
+      data: &tiled::Object,
+      world: &mut World,
+      physics: &mut Physics,
+      kind: impl Zone,
+   ) -> Entity {
+      let top_left = vector(data.x, data.y);
+      let size = vector(data.width, data.height);
+      let center_offset = size / 2.0;
+      let rotation = Mat2::rotation_z(data.rotation);
+      let center = top_left + rotation * center_offset;
+      Zones::spawn(world, physics, kind, center, size, data.rotation)
    }
 }

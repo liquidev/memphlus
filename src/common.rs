@@ -3,8 +3,11 @@
 use std::path::{Path, PathBuf};
 
 use tetra::graphics::mesh::Vertex;
-use tetra::graphics::{Color, Rectangle};
+use tetra::graphics::{Color, Rectangle, Texture};
 use tetra::math::Vec2;
+use tetra::Context;
+
+use crate::resources::Resources;
 
 /// Creates a 2D vector.
 pub fn vector(x: f32, y: f32) -> Vec2<f32> {
@@ -92,4 +95,14 @@ pub fn load_asset_to_string(path: impl AsRef<Path>) -> anyhow::Result<String> {
    let path = asset_path(path);
    println!("loading {:?}", path);
    Ok(std::fs::read_to_string(path)?)
+}
+
+/// A texture resource consisting of a single white pixel.
+pub struct WhiteTexture(pub Texture);
+
+impl WhiteTexture {
+   pub fn insert_to(ctx: &mut Context, resources: &mut Resources) -> anyhow::Result<()> {
+      let texture = Texture::from_rgba(ctx, 1, 1, &[255, 255, 255, 255])?;
+      Ok(resources.insert::<WhiteTexture>(WhiteTexture(texture)))
+   }
 }

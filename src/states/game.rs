@@ -11,6 +11,7 @@ use crate::input::Input;
 use crate::map::Map;
 use crate::physics::Physics;
 use crate::post_process::{PixelEffect, PostProcess};
+use crate::resources::Resources;
 use crate::state::GameState;
 use crate::transform::TransformStack;
 use crate::{entities, transform};
@@ -58,14 +59,14 @@ impl State {
       PostProcess::new(ctx, width, height, 0)
    }
 
-   fn draw_world(&mut self, ctx: &mut Context) -> anyhow::Result<()> {
+   fn draw_world(&mut self, ctx: &mut Context, resources: &mut Resources) -> anyhow::Result<()> {
       graphics::clear(ctx, RemappableColors::BACKGROUND);
 
       self.tstack.save(ctx);
       transform::scale(ctx, vector(32.0, 32.0));
 
       self.map.draw(ctx, &mut self.tstack)?;
-      entities::draw_systems(ctx, &mut self.world)?;
+      entities::draw_systems(ctx, resources, &mut self.world)?;
 
       self.tstack.restore(ctx);
 
@@ -74,15 +75,20 @@ impl State {
 }
 
 impl GameState for State {
-   fn update(&mut self, ctx: &mut Context, input: &Input) -> anyhow::Result<()> {
+   fn update(
+      &mut self,
+      ctx: &mut Context,
+      _resources: &mut Resources,
+      input: &Input,
+   ) -> anyhow::Result<()> {
       entities::tick_systems(ctx, &mut self.world, &mut self.physics, input);
       self.physics.step();
       Ok(())
    }
 
-   fn draw(&mut self, ctx: &mut Context) -> anyhow::Result<()> {
+   fn draw(&mut self, ctx: &mut Context, resources: &mut Resources) -> anyhow::Result<()> {
       self.post_process.bind(ctx);
-      self.draw_world(ctx)?;
+      self.draw_world(ctx, resources)?;
       self.post_process.unbind(ctx);
       self.palette_remap.set_uniform(ctx, "u_palettes", &self.palettes);
       self.post_process.apply(ctx, &self.palette_remap);

@@ -12,13 +12,26 @@ use tetra::math::Vec2;
 use tetra::{time, Context};
 
 use crate::assets::RemappableColors;
-use crate::common::{rect, vector, ToNalgebraVector2};
+use crate::common::{rect, vector, Rect, ToNalgebraVector2};
 use crate::input::{Button, Input};
 use crate::physics::{CollisionGroups, Physics};
 
 use super::interpolation::InterpolatedPosition;
 use super::physics::{Collider, RigidBody};
 use super::{Position, Size};
+
+/// Marker component for signifying that an entity is a camera view.
+pub struct CameraView;
+
+impl CameraView {
+   pub fn spawn(world: &mut World, physics: &mut Physics, rect: Rect) -> Entity {
+      world.spawn((
+         CameraView,
+         Position(rect.top_left()),
+         Size(vector(rect.width, rect.height)),
+      ))
+   }
+}
 
 /// Component for storing state for platformer controls..
 pub struct Platformer {

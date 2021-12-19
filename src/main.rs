@@ -7,19 +7,23 @@ mod meshes;
 mod palette;
 mod physics;
 mod post_process;
+mod resources;
 mod state;
 mod states;
 mod tiled;
 mod transform;
 
 use anyhow::Context as AnyhowContext;
+use common::WhiteTexture;
 use input::Input;
+use resources::Resources;
 use state::GameState;
 use tetra::{Context, ContextBuilder};
 
 struct Game {
    state: Option<Box<dyn GameState>>,
    input: Input,
+   resources: Resources,
 }
 
 impl tetra::State<anyhow::Error> for Game {
@@ -30,13 +34,13 @@ impl tetra::State<anyhow::Error> for Game {
       self.state = Some(state);
 
       // Tick physics and input and all that stuff.
-      self.state.as_mut().unwrap().update(ctx, &self.input)?;
+      self.state.as_mut().unwrap().update(ctx, &mut self.resources, &self.input)?;
 
       Ok(())
    }
 
    fn draw(&mut self, ctx: &mut Context) -> anyhow::Result<()> {
-      self.state.as_mut().unwrap().draw(ctx)?;
+      self.state.as_mut().unwrap().draw(ctx, &mut self.resources)?;
       Ok(())
    }
 }
@@ -51,7 +55,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
    let state = states::game::State::new(&mut ctx)?;
    let state: Option<Box<dyn GameState>> = Some(Box::new(state));
    let input = Input::new();
+   let mut resources = Resources::new();
 
-   ctx.run(|_| Ok(Game { state, input }))?;
+   WhiteTexture::insert_to(&mut ctx, &mut resources)?;
+
+   ctx.run(|_| {
+      Ok(Game {
+         state,
+         input,
+         resources,
+      })
+   })?;
    Ok(())
 }

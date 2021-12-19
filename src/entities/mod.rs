@@ -2,19 +2,22 @@
 
 use hecs::World;
 use tetra::math::Vec2;
-use tetra::Context;
+use tetra::{graphics, Context};
 
 use crate::input::Input;
 use crate::physics::Physics;
+use crate::resources::Resources;
 
 use self::interpolation::tick_interpolation;
 use self::physics::tick_physics;
 use self::player::Player;
+use self::zones::Zones;
 
 pub mod colliders;
 pub mod interpolation;
 pub mod physics;
 pub mod player;
+pub mod zones;
 
 /// The position component.
 pub struct Position(pub Vec2<f32>);
@@ -27,6 +30,9 @@ impl Default for Position {
    }
 }
 
+/// The rotation component, expressed in radians.
+pub struct Rotation(pub f32);
+
 /// The size component.
 pub struct Size(pub Vec2<f32>);
 
@@ -38,7 +44,17 @@ pub fn tick_systems(ctx: &mut Context, world: &mut World, physics: &mut Physics,
 }
 
 /// Draws with all the systems.
-pub fn draw_systems(ctx: &mut Context, world: &mut World) -> anyhow::Result<()> {
+pub fn draw_systems(
+   ctx: &mut Context,
+   resources: &mut Resources,
+   world: &mut World,
+) -> anyhow::Result<()> {
+   graphics::set_color_mask(ctx, false, false, true, true);
+   Zones::draw(ctx, resources, world);
+
+   graphics::set_color_mask(ctx, true, true, false, true);
    Player::draw(ctx, world)?;
+
+   graphics::set_color_mask(ctx, true, true, true, true);
    Ok(())
 }
