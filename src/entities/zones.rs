@@ -1,24 +1,27 @@
 //! Zones, the core mechanic of the game.
 
 use hecs::{Component, Entity, World};
+use rapier2d::prelude::{ColliderBuilder, InteractionGroups};
 use tetra::graphics::{Color, DrawParams};
 use tetra::Context;
 use vek::Vec2;
 
-use crate::common::{vector, WhiteTexture};
-use crate::physics::Physics;
+use crate::common::{vector, ToNalgebraVector2, WhiteTexture};
+use crate::physics::{CollisionGroups, Physics};
 use crate::resources::Resources;
 
+use super::physics::Collider;
 use super::{Position, Rotation, Size};
 
-pub trait Zone: Component {
+/// Auto-generated helper trait for providing zones with palette indices.
+pub trait ZoneIndex: Component {
    /// Returns the unique, constant index of the zone.
    fn index() -> usize;
 }
 
 macro_rules! zone_index {
    ($zone:ty, $index:expr) => {
-      impl Zone for $zone {
+      impl ZoneIndex for $zone {
          fn index() -> usize {
             $index
          }
@@ -26,13 +29,40 @@ macro_rules! zone_index {
    };
 }
 
+/// Zone spawning behavior.
+#[allow(unused_variables)]
+pub trait ZoneSpawn: Component {
+   /// Injects extra behavior for spawning the entity into the world.
+   fn spawn(world: &mut World, physics: &mut Physics, entity: Entity) {}
+}
+
 /// Marker component for platformer zones.
 pub struct PlatformerZone;
 zone_index!(PlatformerZone, 1);
 
+impl ZoneSpawn for PlatformerZone {}
+
 /// Marker component for deadly zones.
 pub struct DeadlyZone;
 zone_index!(DeadlyZone, 2);
+
+impl ZoneSpawn for DeadlyZone {
+   fn spawn(world: &mut World, physics: &mut Physics, entity: Entity) {
+      let Position(position) = *world.get(entity).unwrap();
+      let Size(size) = *world.get(entity).unwrap();
+      let Rotation(rotation) = *world.get(entity).unwrap();
+      let collider = ColliderBuilder::cuboid(size.x / 2.0, size.y / 2.0)
+         .translation(position.nalgebra())
+         .rotation(rotation)
+         .collision_groups(InteractionGroups::new(
+            CollisionGroups::DEADLY,
+            CollisionGroups::PLAYER,
+         ))
+         .build();
+      let collider = physics.colliders.insert(collider);
+      world.insert_one(entity, Collider(collider)).unwrap();
+   }
+}
 
 /// Namespace struct for zone-related systems.
 pub struct Zones;
@@ -50,7 +80,7 @@ impl Zones {
    /// Draws a specific type of zone to the screen.
    fn draw_zone<T>(ctx: &mut Context, resources: &mut Resources, world: &mut World)
    where
-      T: Zone,
+      T: ZoneIndex,
    {
       let WhiteTexture(white_texture) = resources.get().unwrap();
 
@@ -76,14 +106,19 @@ impl Zones {
    }
 
    /// Spawns a zone into the world.
-   pub fn spawn(
+   pub fn spawn<Z>(
       world: &mut World,
       physics: &mut Physics,
-      kind: impl Zone,
+      kind: Z,
       center: Vec2<f32>,
       size: Vec2<f32>,
       rotation: f32,
-   ) -> Entity {
-      world.spawn((kind, Position(center), Size(size), Rotation(rotation)))
+   ) -> Entity
+   where
+      Z: ZoneIndex + ZoneSpawn,
+   {
+      let entity = world.spawn((kind, Position(center), Size(size), Rotation(rotation)));
+      <Z as ZoneSpawn>::spawn(world, physics, entity);
+      entity
    }
 }

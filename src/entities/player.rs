@@ -17,6 +17,7 @@ use crate::input::{Button, Input};
 use crate::physics::{CollisionGroups, Physics};
 
 use super::camera::Camera;
+use super::dead::{Alive, Kill};
 use super::interpolation::InterpolatedPosition;
 use super::physics::{Collider, RigidBody};
 use super::{Position, Size};
@@ -62,7 +63,7 @@ impl Player {
       const COYOTE_TIME: u8 = 10;
 
       for (_id, (_, platformer, &RigidBody(body_handle))) in
-         world.query_mut::<(&Player, &mut Platformer, &RigidBody)>()
+         world.query_mut::<Alive<(&Player, &mut Platformer, &RigidBody)>>()
       {
          {
             let body = &mut physics.rigid_bodies[body_handle];
@@ -117,22 +118,43 @@ impl Player {
       let translation = vector(translation.x, translation.y + size.y);
       physics
          .query
-         .cast_shape(
+         .intersection_with_shape(
             &physics.colliders,
             &Isometry::new(translation.nalgebra(), 0.0),
-            &vector(0.0, 0.1).nalgebra(),
             &shape,
-            1.0,
             InteractionGroups::new(CollisionGroups::PLAYER, CollisionGroups::SOLIDS),
             None,
          )
          .is_some()
    }
 
+   /// Ticks players.
+   pub fn tick(world: &mut World, physics: &mut Physics) {
+      // Kill the player if they touch a deadly collision group.
+      let mut kill = Vec::new();
+      for (id, (_, &Size(size), &RigidBody(body_handle))) in
+         world.query_mut::<Alive<(&Player, &Size, &RigidBody)>>()
+      {
+         let body = &physics.rigid_bodies[body_handle];
+         if let Some(_) = physics.query.intersection_with_shape(
+            &physics.colliders,
+            body.position(),
+            &Cuboid::new((size / 2.0).nalgebra()),
+            InteractionGroups::new(CollisionGroups::PLAYER, CollisionGroups::DEADLY),
+            None,
+         ) {
+            kill.push(id);
+         }
+      }
+      for player in kill {
+         let _ = world.insert_one(player, Kill::after(1));
+      }
+   }
+
    /// Draws players.
    pub fn draw(ctx: &mut Context, world: &mut World) -> anyhow::Result<()> {
       for (_id, (_, InterpolatedPosition(position), &Size(size))) in
-         world.query_mut::<(&Player, &InterpolatedPosition, &Size)>()
+         world.query_mut::<Alive<(&Player, &InterpolatedPosition, &Size)>>()
       {
          let position = position.blend(ctx);
          let rect = rect(position - size / 2.0, size);

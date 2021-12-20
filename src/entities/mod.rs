@@ -9,6 +9,7 @@ use crate::physics::Physics;
 use crate::resources::Resources;
 
 use self::camera::Camera;
+use self::dead::Kill;
 use self::interpolation::tick_interpolation;
 use self::physics::tick_physics;
 use self::player::Player;
@@ -16,6 +17,7 @@ use self::zones::Zones;
 
 pub mod camera;
 pub mod colliders;
+pub mod dead;
 pub mod interpolation;
 pub mod physics;
 pub mod player;
@@ -41,6 +43,8 @@ pub struct Size(pub Vec2<f32>);
 /// Ticks all the systems.
 pub fn tick_systems(ctx: &mut Context, world: &mut World, physics: &mut Physics, input: &Input) {
    Player::tick_controls(ctx, world, physics, input);
+   Player::tick(world, physics);
+   Kill::tick(world);
    tick_physics(world, physics);
    tick_interpolation(world);
    Camera::tick(world, physics);

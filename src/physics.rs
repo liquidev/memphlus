@@ -83,6 +83,7 @@ pub struct CollisionGroups;
 impl CollisionGroups {
    pub const PLAYER: u32       = 0b00000000_00000001;
    pub const SOLIDS: u32       = 0b00000001_00000000;
-   pub const CAMERA_VIEWS: u32 = 0b00000010_00000000;
+   pub const DEADLY: u32       = 0b00000010_00000000;
+   pub const CAMERA_VIEWS: u32 = 0b10000000_00000000;
    pub const ALL: u32 = Self::PLAYER | Self::SOLIDS | Self::CAMERA_VIEWS;
 }
