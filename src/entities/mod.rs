@@ -8,11 +8,13 @@ use crate::input::Input;
 use crate::physics::Physics;
 use crate::resources::Resources;
 
+use self::camera::Camera;
 use self::interpolation::tick_interpolation;
 use self::physics::tick_physics;
 use self::player::Player;
 use self::zones::Zones;
 
+pub mod camera;
 pub mod colliders;
 pub mod interpolation;
 pub mod physics;
@@ -41,6 +43,7 @@ pub fn tick_systems(ctx: &mut Context, world: &mut World, physics: &mut Physics,
    Player::tick_controls(ctx, world, physics, input);
    tick_physics(world, physics);
    tick_interpolation(world);
+   Camera::tick(world, physics);
 }
 
 /// Draws with all the systems.

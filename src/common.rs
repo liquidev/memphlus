@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use tetra::graphics::mesh::Vertex;
 use tetra::graphics::{Color, Rectangle, Texture};
 use tetra::math::Vec2;
-use tetra::Context;
+use tetra::{window, Context};
 
 use crate::resources::Resources;
 
@@ -50,14 +50,22 @@ pub fn colored_vertex(position: Vec2<f32>, color: Color) -> Vertex {
    }
 }
 
-/// Functions for returning extra points in a rectangle.
-pub trait RectPoints {
-   fn center_point(&self) -> Vec2<f32>;
+/// Functions for retrieving the position and size of a rectangle, as vectors.
+pub trait RectVectors<T> {
+   fn position(&self) -> Vec2<T>;
+   fn size(&self) -> Vec2<T>;
 }
 
-impl RectPoints for Rect {
-   fn center_point(&self) -> Vec2<f32> {
-      vector(self.x + self.width / 2.0, self.y + self.height / 2.0)
+impl<T> RectVectors<T> for Rectangle<T>
+where
+   T: Copy,
+{
+   fn position(&self) -> Vec2<T> {
+      Vec2::new(self.x, self.y)
+   }
+
+   fn size(&self) -> Vec2<T> {
+      Vec2::new(self.width, self.height)
    }
 }
 
@@ -105,4 +113,9 @@ impl WhiteTexture {
       let texture = Texture::from_rgba(ctx, 1, 1, &[255, 255, 255, 255])?;
       Ok(resources.insert::<WhiteTexture>(WhiteTexture(texture)))
    }
+}
+
+pub fn window_size(ctx: &Context) -> Vec2<f32> {
+   let (width, height) = window::get_size(ctx);
+   vector(width as f32, height as f32)
 }

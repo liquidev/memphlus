@@ -8,6 +8,7 @@ use serde::Deserialize;
 use vek::Mat2;
 
 use crate::common::{rect, vector};
+use crate::entities::camera::CameraView;
 use crate::entities::colliders::RectCollider;
 use crate::entities::player::Player;
 use crate::entities::zones::{DeadlyZone, PlatformerZone, Zone, Zones};
@@ -22,6 +23,7 @@ use super::{Layer, Map};
 enum EntityKind {
    Player,
    Collider,
+   CameraView,
 
    ZonePlatformer,
    ZoneDeadly,
@@ -68,9 +70,12 @@ impl Map {
          ..data
       };
       let position = vector(data.x, data.y);
+      let size = vector(data.width, data.height);
+      let rect = rect(position, size);
       let _ = match kind {
          EntityKind::Player => Player::spawn(world, physics, position),
          EntityKind::Collider => Self::spawn_collider(&data, world, physics),
+         EntityKind::CameraView => CameraView::spawn(world, physics, rect),
          EntityKind::ZoneDeadly => Self::spawn_zone(&data, world, physics, DeadlyZone),
          EntityKind::ZonePlatformer => Self::spawn_zone(&data, world, physics, PlatformerZone),
       };

@@ -49,6 +49,11 @@ impl Physics {
       }
    }
 
+   /// Updates the query pipeline.
+   pub fn update_query_pipeline(&mut self) {
+      self.query.update(&self.island_manager, &self.rigid_bodies, &self.colliders);
+   }
+
    /// Steps the physics state.
    pub fn step(&mut self) {
       // Perform two steps to hopefully make penetrations less obvious.
@@ -65,17 +70,19 @@ impl Physics {
             &mut self.ccd_solver,
             &(),
             &(),
-         )
+         );
+         self.update_query_pipeline();
       }
-      self.query.update(&self.island_manager, &self.rigid_bodies, &self.colliders);
    }
 }
 
 /// Collision group bits.
 pub struct CollisionGroups;
 
+#[rustfmt::skip]
 impl CollisionGroups {
-   pub const PLAYER: u32 = 0b0000_0001;
-   pub const SOLIDS: u32 = 0b0001_0000;
-   pub const ALL: u32 = Self::PLAYER | Self::SOLIDS;
+   pub const PLAYER: u32       = 0b00000000_00000001;
+   pub const SOLIDS: u32       = 0b00000001_00000000;
+   pub const CAMERA_VIEWS: u32 = 0b00000010_00000000;
+   pub const ALL: u32 = Self::PLAYER | Self::SOLIDS | Self::CAMERA_VIEWS;
 }

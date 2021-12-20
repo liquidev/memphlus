@@ -26,7 +26,7 @@ pub trait GameState: Any {
    fn draw(&mut self, ctx: &mut Context, resources: &mut Resources) -> anyhow::Result<()>;
 
    /// Called when the window is resized.
-   fn resize(&mut self, _ctx: &mut Context, _width: u32, _height: u32) -> anyhow::Result<()> {
+   fn resize(&mut self, _ctx: &mut Context, _width: i32, _height: i32) -> anyhow::Result<()> {
       Ok(())
    }
 

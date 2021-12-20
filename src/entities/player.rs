@@ -9,29 +9,17 @@ use rapier2d::prelude::{
 use tetra::graphics::mesh::{GeometryBuilder, ShapeStyle};
 use tetra::graphics::DrawParams;
 use tetra::math::Vec2;
-use tetra::{time, Context};
+use tetra::Context;
 
 use crate::assets::RemappableColors;
-use crate::common::{rect, vector, Rect, ToNalgebraVector2};
+use crate::common::{rect, vector, ToNalgebraVector2};
 use crate::input::{Button, Input};
 use crate::physics::{CollisionGroups, Physics};
 
+use super::camera::Camera;
 use super::interpolation::InterpolatedPosition;
 use super::physics::{Collider, RigidBody};
 use super::{Position, Size};
-
-/// Marker component for signifying that an entity is a camera view.
-pub struct CameraView;
-
-impl CameraView {
-   pub fn spawn(world: &mut World, physics: &mut Physics, rect: Rect) -> Entity {
-      world.spawn((
-         CameraView,
-         Position(rect.top_left()),
-         Size(vector(rect.width, rect.height)),
-      ))
-   }
-}
 
 /// Component for storing state for platformer controls..
 pub struct Platformer {
@@ -124,7 +112,7 @@ impl Player {
    fn is_on_ground(physics: &Physics, body: RigidBodyHandle) -> bool {
       let body = &physics.rigid_bodies[body];
       let size = Vec2::from_slice(&Self::SIZE) / 2.0;
-      let shape = Cuboid::new(vector(size.x - 0.01, 0.01).nalgebra());
+      let shape = Cuboid::new(vector(size.x - 0.05, 0.01).nalgebra());
       let translation = body.translation();
       let translation = vector(translation.x, translation.y + size.y);
       physics
@@ -143,10 +131,10 @@ impl Player {
 
    /// Draws players.
    pub fn draw(ctx: &mut Context, world: &mut World) -> anyhow::Result<()> {
-      for (_id, (_, position, &Size(size))) in
+      for (_id, (_, InterpolatedPosition(position), &Size(size))) in
          world.query_mut::<(&Player, &InterpolatedPosition, &Size)>()
       {
-         let position = position.lerp(time::get_blend_factor(ctx));
+         let position = position.blend(ctx);
          let rect = rect(position - size / 2.0, size);
          let mesh = GeometryBuilder::new()
             .set_color(RemappableColors::BACKGROUND)
@@ -177,7 +165,7 @@ impl Player {
       let collider =
          physics.colliders.insert_with_parent(collider, body, &mut physics.rigid_bodies);
 
-      world.spawn((
+      let entity = world.spawn((
          Player,
          Position(position),
          InterpolatedPosition::new(position),
@@ -185,6 +173,11 @@ impl Player {
          RigidBody(body),
          Collider(collider),
          Platformer::new(),
-      ))
+         Camera::new(),
+      ));
+      // Make sure the camera is initialized to the player's viewport, to prevent jank.
+      physics.update_query_pipeline();
+      Camera::warp(world, physics, entity);
+      entity
    }
 }

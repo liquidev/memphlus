@@ -2,6 +2,7 @@ mod assets;
 mod common;
 mod entities;
 mod input;
+mod interpolation;
 mod map;
 mod meshes;
 mod palette;
@@ -18,7 +19,7 @@ use common::WhiteTexture;
 use input::Input;
 use resources::Resources;
 use state::GameState;
-use tetra::{Context, ContextBuilder};
+use tetra::{Context, ContextBuilder, Event};
 
 struct Game {
    state: Option<Box<dyn GameState>>,
@@ -43,14 +44,26 @@ impl tetra::State<anyhow::Error> for Game {
       self.state.as_mut().unwrap().draw(ctx, &mut self.resources)?;
       Ok(())
    }
+
+   fn event(&mut self, ctx: &mut Context, event: Event) -> anyhow::Result<()> {
+      match event {
+         Event::Resized { width, height } => {
+            self.state.as_mut().unwrap().resize(ctx, width, height)?;
+         }
+         _ => (),
+      }
+      Ok(())
+   }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
    let mut ctx = ContextBuilder::new("mem.pHlus", 1280, 720)
       .resizable(true)
       .show_mouse(true)
+      .stencil_buffer(true)
+      .multisampling(8)
       .build()
-      .context("could not create ggez::Context")?;
+      .context("could not create tetra::Context")?;
 
    let state = states::game::State::new(&mut ctx)?;
    let state: Option<Box<dyn GameState>> = Some(Box::new(state));
