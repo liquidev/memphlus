@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="9" nextobjectid="35">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="11" nextobjectid="52">
  <editorsettings>
   <chunksize width="8" height="8"/>
  </editorsettings>
@@ -19,8 +19,8 @@
    <chunk x="0" y="8" width="8" height="8">
 64,0,0,0,0,0,0,0,
 64,0,0,0,0,0,0,0,
-0,34,3,3,3,3,4,9,
-0,0,0,0,0,0,51,3,
+0,34,3,3,3,3,3,3,
+0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
@@ -29,8 +29,8 @@
    <chunk x="8" y="8" width="8" height="8">
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
-9,9,9,2,3,3,3,3,
-3,3,3,50,0,0,0,0,
+3,3,3,3,3,3,3,3,
+0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
@@ -39,27 +39,87 @@
    <chunk x="16" y="8" width="8" height="8">
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
-3,3,3,3,3,3,3,4,
-0,0,0,0,0,0,0,12,
-0,0,0,0,0,0,0,12,
-0,0,0,0,0,0,0,51,
+3,3,3,3,3,3,3,3,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</chunk>
+   <chunk x="24" y="8" width="8" height="8">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+3,3,4,9,9,9,9,2,
+0,0,51,3,3,3,3,50,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0
 </chunk>
    <chunk x="32" y="8" width="8" height="8">
 0,0,0,0,0,0,0,0,
+0,0,0,11,0,0,0,0,
+3,3,3,3,3,3,3,3,
 0,0,0,0,0,0,0,0,
-2,3,3,3,3,3,3,3,
-10,0,0,0,0,0,0,0,
-10,0,0,0,0,0,0,0,
-50,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0
 </chunk>
    <chunk x="40" y="8" width="8" height="8">
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
-3,3,3,3,35,0,0,0,
+3,3,3,3,3,3,3,3,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</chunk>
+   <chunk x="48" y="8" width="8" height="8">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+3,4,0,0,0,0,0,0,
+0,12,0,0,0,0,0,0,
+0,12,0,0,0,0,0,0,
+0,12,0,0,0,0,0,0,
+0,51,0,0,0,0,0,0,
+0,0,0,0,0,38,39,0
+</chunk>
+   <chunk x="56" y="8" width="8" height="8">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,2,3,3,3,3,3,
+0,0,10,0,0,0,0,0,
+0,0,10,0,0,0,0,0,
+0,0,10,0,0,0,0,0,
+0,0,50,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</chunk>
+   <chunk x="64" y="8" width="8" height="8">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+3,3,3,3,3,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</chunk>
+   <chunk x="48" y="16" width="8" height="8">
+0,0,0,0,0,46,47,0,
+0,0,0,0,0,0,39,38,
+0,0,0,0,29,0,0,46,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</chunk>
+   <chunk x="56" y="16" width="8" height="8">
+0,0,0,0,0,0,0,0,
+39,0,0,0,0,0,0,0,
+47,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
@@ -68,36 +128,59 @@
 </chunk>
   </data>
  </layer>
- <objectgroup color="#7f7f7f" id="3" name="camera_views" locked="1" opacity="0.14">
-  <object id="5" template="templates/camera_view.tx" name="Hello World" x="-16" y="48" width="320" height="176">
-   <properties>
-    <property name="checkpoint" type="object" value="31"/>
-   </properties>
-  </object>
-  <object id="32" template="templates/camera_view.tx" name="Mind the Gap" x="304" y="48" width="288" height="192">
-   <properties>
-    <property name="checkpoint" type="object" value="34"/>
-   </properties>
-  </object>
+ <objectgroup color="#ffc0c0" id="2" name="zones">
+  <object id="3" template="templates/zone_platformer.tx" x="-32" y="0" width="1328" height="384"/>
  </objectgroup>
- <objectgroup id="6" name="entities" locked="1">
+ <objectgroup color="#7f7f7f" id="3" name="camera_views" opacity="0.3">
+  <object id="5" template="templates/camera_view.tx" name="" x="-16" y="48" width="320" height="176"/>
+  <object id="36" template="templates/camera_view.tx" x="304" y="48" width="320" height="176"/>
+  <object id="42" template="templates/camera_view.tx" x="624" y="48" width="480" height="272"/>
+ </objectgroup>
+ <objectgroup color="#f66151" id="6" name="entities">
   <object id="11" name="Player" type="player" x="64" y="128">
    <point/>
   </object>
+  <object id="30" template="templates/zone_deadly.tx" x="792" y="200" width="144" height="152" rotation="0"/>
  </objectgroup>
- <objectgroup color="#ffc0c0" id="2" name="zones">
-  <object id="3" template="templates/zone_platformer.tx" x="-32" y="0" width="672" height="272"/>
-  <object id="30" template="templates/zone_deadly.tx" x="376" y="200" width="144" height="48" rotation="0"/>
+ <objectgroup id="9" name="texts">
+  <object id="37" type="text" x="32" y="76" width="224" height="48">
+   <text fontfamily="Lexend Deca" pixelsize="12" halign="center">←  →     or     A  D
+to move around</text>
+  </object>
+  <object id="38" type="text" x="352" y="80" width="224" height="48">
+   <text fontfamily="Lexend Deca" pixelsize="12" halign="center">Space
+to jump</text>
+  </object>
  </objectgroup>
  <objectgroup color="#058ef0" id="7" name="colliders" opacity="0.35">
-  <object id="18" type="collider" x="16" y="160" width="96" height="32"/>
-  <object id="19" type="collider" x="176" y="160" width="208" height="80"/>
+  <object id="18" type="collider" x="16" y="160" width="416" height="32"/>
   <object id="23" template="templates/collider_rect.tx" x="0" y="64" width="16" height="96"/>
-  <object id="25" template="templates/collider_rect.tx" x="112" y="176" width="64" height="16"/>
-  <object id="29" type="collider" x="512" y="160" width="208" height="80"/>
+  <object id="39" type="collider" x="432" y="176" width="64" height="16"/>
+  <object id="40" type="collider" x="496" y="160" width="304" height="80"/>
+  <object id="44" type="collider" x="1104" y="48" width="176" height="112"/>
+  <object id="45" type="collider" x="928" y="160" width="176" height="80"/>
+ </objectgroup>
+ <objectgroup color="#ff7800" id="10" name="triggers">
+  <object id="48" template="templates/trigger.tx" x="304" y="48" width="16" height="112">
+   <properties>
+    <property name="trigger" type="object" value="34"/>
+   </properties>
+  </object>
+  <object id="49" template="templates/trigger.tx" x="624" y="48" width="16" height="112">
+   <properties>
+    <property name="trigger" type="object" value="47"/>
+   </properties>
+  </object>
+  <object id="51" template="templates/trigger.tx" x="1024" y="48" width="32" height="112">
+   <properties>
+    <property name="trigger" type="object" value="50"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="8" name="checkpoints">
   <object id="31" template="templates/checkpoint.tx" x="64" y="128"/>
-  <object id="34" template="templates/checkpoint.tx" x="336" y="128"/>
+  <object id="34" template="templates/checkpoint.tx" x="368" y="128"/>
+  <object id="47" template="templates/checkpoint.tx" x="688" y="128"/>
+  <object id="50" template="templates/checkpoint.tx" x="1040" y="128"/>
  </objectgroup>
 </map>

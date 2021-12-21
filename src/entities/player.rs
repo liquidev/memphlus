@@ -17,7 +17,7 @@ use crate::input::{Button, Input};
 use crate::physics::{CollisionGroups, Physics};
 
 use super::camera::Camera;
-use super::dead::{Alive, Kill};
+use super::dead::{Alive, Dead, Kill};
 use super::interpolation::InterpolatedPosition;
 use super::physics::{Collider, RigidBody};
 use super::{Position, Size};
@@ -40,10 +40,16 @@ impl Platformer {
 }
 
 /// Marker component and namespace for player-related functions.
-pub struct Player;
+pub struct Player {
+   checkpoint: Vec2<f32>,
+}
 
 impl Player {
    const SIZE: [f32; 2] = [0.8, 0.8];
+
+   pub fn new(checkpoint: Vec2<f32>) -> Self {
+      Self { checkpoint }
+   }
 
    /// Ticks the player controls.
    pub fn tick_controls(
@@ -149,6 +155,17 @@ impl Player {
       for player in kill {
          let _ = world.insert_one(player, Kill::after(1));
       }
+      let mut respawn = Vec::new();
+      for (id, (player, &RigidBody(body_handle), &Dead)) in
+         world.query_mut::<(&Player, &RigidBody, &Dead)>()
+      {
+         let body = &mut physics.rigid_bodies[body_handle];
+         body.set_translation(player.checkpoint.nalgebra(), true);
+         respawn.push(id);
+      }
+      for player in respawn {
+         let _ = world.remove_one::<Dead>(player);
+      }
    }
 
    /// Draws players.
@@ -188,7 +205,7 @@ impl Player {
          physics.colliders.insert_with_parent(collider, body, &mut physics.rigid_bodies);
 
       let entity = world.spawn((
-         Player,
+         Player::new(position),
          Position(position),
          InterpolatedPosition::new(position),
          Size(size),

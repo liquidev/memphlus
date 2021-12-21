@@ -1,6 +1,7 @@
 //! Zones, the core mechanic of the game.
 
 use hecs::{Component, Entity, World};
+use nanorand::Rng;
 use rapier2d::prelude::{ColliderBuilder, InteractionGroups};
 use tetra::graphics::{Color, DrawParams};
 use tetra::Context;
@@ -64,6 +65,18 @@ impl ZoneSpawn for DeadlyZone {
    }
 }
 
+/// Zone rendering parameters.
+struct RenderParams {
+   offset: Vec2<f32>,
+}
+
+/// The default render parameter function.
+fn default_render_params() -> RenderParams {
+   RenderParams {
+      offset: vector(0.0, 0.0),
+   }
+}
+
 /// Namespace struct for zone-related systems.
 pub struct Zones;
 
@@ -73,14 +86,22 @@ impl Zones {
 
    /// Draws zones to the screen.
    pub fn draw(ctx: &mut Context, resources: &mut Resources, world: &mut World) {
-      Self::draw_zone::<PlatformerZone>(ctx, resources, world);
-      Self::draw_zone::<DeadlyZone>(ctx, resources, world);
+      let mut rand = nanorand::tls_rng();
+      Self::draw_zone::<PlatformerZone, _>(ctx, resources, world, default_render_params);
+      Self::draw_zone::<DeadlyZone, _>(ctx, resources, world, || RenderParams {
+         offset: (vector(rand.generate(), rand.generate()) * 2.0 - 1.0) * 0.05,
+      });
    }
 
    /// Draws a specific type of zone to the screen.
-   fn draw_zone<T>(ctx: &mut Context, resources: &mut Resources, world: &mut World)
-   where
+   fn draw_zone<T, P>(
+      ctx: &mut Context,
+      resources: &mut Resources,
+      world: &mut World,
+      mut params: P,
+   ) where
       T: ZoneIndex,
+      P: FnMut() -> RenderParams,
    {
       let WhiteTexture(white_texture) = resources.get().unwrap();
 
@@ -93,12 +114,13 @@ impl Zones {
             b: T::index() as f32 / Self::MAX as f32,
             a: 1.0,
          };
+         let params = params();
          white_texture.draw(
             ctx,
             DrawParams::new()
                .origin(vector(0.5, 0.5))
                .scale(size)
-               .position(position)
+               .position(position + params.offset)
                .rotation(rotation)
                .color(color),
          );

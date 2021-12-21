@@ -148,33 +148,8 @@ impl Map {
       tileset: &Tileset,
    ) -> Layer {
       match data.kind {
-         tiled::LayerKind::Tile { chunks } => Self::create_tile_layer(chunks, tileset),
+         tiled::LayerKind::Tile { chunks } => Self::create_tile_layer(chunks, tileset, physics),
          tiled::LayerKind::Object { objects } => Self::create_object_layer(objects, world, physics),
       }
-   }
-
-   /// Creates a new tile layer from a list of chunks.
-   fn create_tile_layer(in_chunks: Vec<tiled::Chunk>, tileset: &Tileset) -> Layer {
-      let mut chunks = HashMap::new();
-
-      for chunk_data in in_chunks {
-         let chunk_position = (
-            chunk_data.x >> Chunk::SIZE_BITS,
-            chunk_data.y >> Chunk::SIZE_BITS,
-         );
-         let mut chunk = Chunk::from_tile_id(0);
-         for y in 0..Chunk::SIZE {
-            for x in 0..Chunk::SIZE {
-               // Subtract 1 because empty tiles are represented as 0, but we already have an
-               // empty tile at ID 0 anyways.
-               chunk[(x, y)] = chunk_data.data[x + y * Chunk::SIZE].saturating_sub(1);
-            }
-         }
-         if !chunk.is_empty(tileset) {
-            chunks.insert(chunk_position, chunk);
-         }
-      }
-
-      Layer::Tile { chunks }
    }
 }

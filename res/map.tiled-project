@@ -2,9 +2,9 @@
     "automappingRulesFile": "",
     "commands": [
     ],
-    "extensionsPath": "extensions",
+    "extensionsPath": "map",
     "folders": [
         "map"
     ],
-    "objectTypesFile": ""
+    "objectTypesFile": "map/objecttypes.xml"
 }
