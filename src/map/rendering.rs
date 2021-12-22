@@ -43,12 +43,12 @@ impl Chunk {
                let kind = tileset.kind(tile_id);
                let mut block_has_vertices = true;
                match kind {
-                  SolidTopLeft | SolidTop | SolidTopRight | SolidRight | SolidBottomRight
+                  | SolidTopLeft | SolidTop | SolidTopRight | SolidRight | SolidBottomRight
                   | SolidBottom | SolidBottomLeft | SolidLeft | SolidVTop | SolidVMiddle
                   | SolidVBottom | SolidHLeft | SolidHCenter | SolidHRight | SolidTile => {
                      TileMeshes::build_sides(&mut mesh, center, kind.try_into().unwrap())
                   }
-                  SolidTopFadeLeft | SolidBottomFadeLeft | SolidLeftFadeBottom
+                  | SolidTopFadeLeft | SolidBottomFadeLeft | SolidLeftFadeBottom
                   | SolidRightFadeBottom | SolidTopFadeRight | SolidBottomFadeRight
                   | SolidLeftFadeTop | SolidRightFadeTop => TileMeshes::build_fading_side(
                      &mut mesh,
@@ -56,10 +56,15 @@ impl Chunk {
                      kind.side().unwrap(),
                      Self::fade_opacities(kind),
                   ),
-                  SolidCornerTopLeft
+                  | SolidCornerTopLeft
                   | SolidCornerTopRight
                   | SolidCornerBottomRight
                   | SolidCornerBottomLeft => {
+                     TileMeshes::build_corner(&mut mesh, center, kind.corner().unwrap())
+                  }
+                  | SolidPipeTopLeft | SolidPipeTopRight | SolidPipeBottomRight
+                  | SolidPipeBottomLeft => {
+                     TileMeshes::build_sides(&mut mesh, center, kind.try_into().unwrap());
                      TileMeshes::build_corner(&mut mesh, center, kind.corner().unwrap())
                   }
                   SpikesUp | SpikesRight | SpikesDown | SpikesLeft => {

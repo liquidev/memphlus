@@ -45,5 +45,9 @@
  <tile id="46" type="solid_corner_top_left"/>
  <tile id="49" type="solid_left_fade_bottom"/>
  <tile id="50" type="solid_right_fade_bottom"/>
+ <tile id="53" type="solid_pipe_top_left"/>
+ <tile id="54" type="solid_pipe_top_right"/>
+ <tile id="61" type="solid_pipe_bottom_left"/>
+ <tile id="62" type="solid_pipe_bottom_right"/>
  <tile id="63" type="barrier"/>
 </tileset>

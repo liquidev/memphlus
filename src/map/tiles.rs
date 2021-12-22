@@ -42,6 +42,10 @@ pub enum TileKind {
    SolidCornerTopRight,
    SolidCornerBottomRight,
    SolidCornerBottomLeft,
+   SolidPipeTopLeft,
+   SolidPipeTopRight,
+   SolidPipeBottomRight,
+   SolidPipeBottomLeft,
    SolidTopFadeLeft,
    SolidTopFadeRight,
    SolidBottomFadeLeft,
@@ -101,10 +105,10 @@ impl TileKind {
 
    pub fn corner(&self) -> Option<Corner> {
       match self {
-         Self::SolidCornerTopLeft => Some(Corner::TopLeft),
-         Self::SolidCornerTopRight => Some(Corner::TopRight),
-         Self::SolidCornerBottomRight => Some(Corner::BottomRight),
-         Self::SolidCornerBottomLeft => Some(Corner::BottomLeft),
+         Self::SolidCornerTopLeft | Self::SolidPipeTopLeft => Some(Corner::TopLeft),
+         Self::SolidCornerTopRight | Self::SolidPipeTopRight => Some(Corner::TopRight),
+         Self::SolidCornerBottomRight | Self::SolidPipeBottomRight => Some(Corner::BottomRight),
+         Self::SolidCornerBottomLeft | Self::SolidPipeBottomLeft => Some(Corner::BottomLeft),
          _ => None,
       }
    }
@@ -156,13 +160,13 @@ impl TryFrom<TileKind> for Sides {
    fn try_from(kind: TileKind) -> Result<Self, Self::Error> {
       use TileKind::*;
       match kind {
-         SolidTopLeft => Ok(Sides::TOP | Sides::LEFT),
+         SolidTopLeft | SolidPipeTopLeft => Ok(Sides::TOP | Sides::LEFT),
          SolidTop | SolidTopFadeLeft | SolidTopFadeRight => Ok(Sides::TOP),
-         SolidTopRight => Ok(Sides::TOP | Sides::RIGHT),
+         SolidTopRight | SolidPipeTopRight => Ok(Sides::TOP | Sides::RIGHT),
          SolidRight | SolidRightFadeTop | SolidRightFadeBottom => Ok(Sides::RIGHT),
-         SolidBottomRight => Ok(Sides::BOTTOM | Sides::RIGHT),
+         SolidBottomRight | SolidPipeBottomRight => Ok(Sides::BOTTOM | Sides::RIGHT),
          SolidBottom | SolidBottomFadeLeft | SolidBottomFadeRight => Ok(Sides::BOTTOM),
-         SolidBottomLeft => Ok(Sides::BOTTOM | Sides::LEFT),
+         SolidBottomLeft | SolidPipeBottomLeft => Ok(Sides::BOTTOM | Sides::LEFT),
          SolidLeft | SolidLeftFadeTop | SolidLeftFadeBottom => Ok(Sides::LEFT),
          SolidVTop => Ok(Sides::LEFT | Sides::TOP | Sides::RIGHT),
          SolidVMiddle => Ok(Sides::LEFT | Sides::RIGHT),
