@@ -5,8 +5,8 @@ use std::time::Duration;
 use hecs::{Component, Entity, World};
 use rapier2d::math::Isometry;
 use rapier2d::prelude::{
-   Ball, CoefficientCombineRule, Collider as RapierCollider, ColliderBuilder, Cuboid,
-   InteractionGroups, RigidBody as RapierRigidBody, RigidBodyBuilder, RigidBodyHandle, SharedShape,
+   Ball, CoefficientCombineRule, ColliderBuilder, Cuboid, InteractionGroups, RigidBodyBuilder,
+   RigidBodyHandle, SharedShape,
 };
 use tetra::graphics::mesh::{GeometryBuilder, ShapeStyle};
 use tetra::graphics::DrawParams;
@@ -79,11 +79,21 @@ impl Unshaped {
       }
    }
 
-   fn tick_controls(ctx: &mut Context, world: &mut World, physics: &mut Physics, input: &Input) {
-      for (_id, (_, unshaped, &RigidBody(body_handle))) in
-         world.query_mut::<Alive<(&Player, &mut Unshaped, &RigidBody)>>()
+   fn tick_controls(world: &mut World, physics: &mut Physics, input: &Input) {
+      const ACCELERATION: f32 = 50.0;
+      const DAMPING: f32 = 0.97;
+
+      for (_id, (_, _, &RigidBody(body_handle))) in
+         world.query_mut::<Alive<(&Player, &Unshaped, &RigidBody)>>()
       {
          let body = &mut physics.rigid_bodies[body_handle];
+         if input.joystick().magnitude_squared() > 0.3 * 0.3 {
+            body.apply_force((input.joystick() * ACCELERATION).nalgebra(), true);
+         } else {
+            let velocity = body.linvel().vek();
+            let dampened = velocity * DAMPING;
+            body.set_linvel(dampened.nalgebra(), true);
+         }
       }
    }
 }
@@ -253,6 +263,7 @@ impl Player {
       physics: &mut Physics,
       input: &Input,
    ) {
+      Unshaped::tick_controls(world, physics, input);
       Platformer::tick_controls(ctx, world, physics, input);
    }
 

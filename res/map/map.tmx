@@ -218,7 +218,7 @@ to jump</text>
   </object>
  </objectgroup>
  <objectgroup color="#f66151" id="6" name="entities">
-  <object id="11" name="Player" type="player" x="64" y="128">
+  <object id="11" name="Player" type="player" x="1148" y="136">
    <point/>
   </object>
   <object id="30" template="templates/zone_deadly.tx" x="792" y="200" width="144" height="152" rotation="0"/>
