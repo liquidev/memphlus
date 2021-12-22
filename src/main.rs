@@ -5,7 +5,6 @@ mod input;
 mod interpolation;
 mod map;
 mod meshes;
-mod palette;
 mod physics;
 mod post_process;
 mod resources;
