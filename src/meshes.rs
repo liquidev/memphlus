@@ -54,23 +54,13 @@ impl MeshBuilder {
       color: Color,
    ) -> &mut Self {
       let subdivisions = ((end_angle - start_angle).abs() * radius).max(6.0) as u32;
-      let delta_angle = (end_angle - start_angle) / (subdivisions - 1) as f32;
-      let sin_delta = delta_angle.sin();
-      let cos_delta = delta_angle.cos();
-
-      let mut angle_vector = vector(start_angle.cos(), start_angle.sin());
-
       let center_index = self.vertices.len() as u32;
       let center_vertex = colored_vertex(center, color);
       self.vertices.push(center_vertex);
 
       let first_rim_index = self.vertices.len() as u32;
-      for _ in 0..subdivisions {
+      for angle_vector in Rotate::new(start_angle, end_angle, subdivisions) {
          self.vertices.push(colored_vertex(center + angle_vector * radius, color));
-         angle_vector = vector(
-            angle_vector.x * cos_delta - angle_vector.y * sin_delta,
-            angle_vector.x * sin_delta + angle_vector.y * cos_delta,
-         );
       }
       for index in 0..subdivisions - 1 {
          let index = first_rim_index + index;
@@ -167,5 +157,46 @@ impl MeshBuilder {
       );
       mesh.set_backface_culling(false);
       Ok(mesh)
+   }
+}
+
+struct Rotate {
+   current_vertex: u32,
+   vertex_count: u32,
+   angle_vector: Vec2<f32>,
+   sin: f32,
+   cos: f32,
+}
+
+impl Rotate {
+   fn new(start_angle: f32, end_angle: f32, vertex_count: u32) -> Self {
+      let delta_angle = (end_angle - start_angle) / (vertex_count - 1) as f32;
+      let cos = delta_angle.cos();
+      let sin = delta_angle.sin();
+      Self {
+         current_vertex: 0,
+         vertex_count,
+         angle_vector: vector(start_angle.cos(), start_angle.sin()),
+         sin,
+         cos,
+      }
+   }
+}
+
+impl Iterator for Rotate {
+   type Item = Vec2<f32>;
+
+   fn next(&mut self) -> Option<Self::Item> {
+      if self.current_vertex < self.vertex_count {
+         let angle_vector = self.angle_vector;
+         self.angle_vector = vector(
+            angle_vector.x * self.cos - angle_vector.y * self.sin,
+            angle_vector.x * self.sin + angle_vector.y * self.cos,
+         );
+         self.current_vertex += 1;
+         Some(angle_vector)
+      } else {
+         None
+      }
    }
 }

@@ -76,9 +76,4 @@ where
    pub fn current(&self) -> T {
       self.current
    }
-
-   /// Returns the previous value.
-   pub fn previous(&self) -> T {
-      self.previous
-   }
 }

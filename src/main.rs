@@ -36,6 +36,7 @@ impl tetra::State<anyhow::Error> for Game {
       self.state = Some(state);
 
       // Tick physics and input and all that stuff.
+      self.input.tick(ctx);
       self.state.as_mut().unwrap().update(ctx, &mut self.resources, &self.input)?;
 
       Ok(())
