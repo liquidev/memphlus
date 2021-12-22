@@ -11,7 +11,7 @@ use crate::common::{rect, vector};
 use crate::entities::camera::CameraView;
 use crate::entities::colliders::RectCollider;
 use crate::entities::player::Player;
-use crate::entities::zones::{DeadlyZone, PlatformerZone, ZoneIndex, ZoneSpawn, Zones};
+use crate::entities::zones::{DeadlyZone, PlatformerZone, ZoneData, ZoneSpawn, Zones};
 use crate::physics::Physics;
 use crate::tiled;
 
@@ -93,7 +93,7 @@ impl Map {
       data: &tiled::Object,
       world: &mut World,
       physics: &mut Physics,
-      kind: impl ZoneIndex + ZoneSpawn,
+      kind: impl ZoneData + ZoneSpawn,
    ) -> Entity {
       let top_left = vector(data.x, data.y);
       let size = vector(data.width, data.height);

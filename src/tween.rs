@@ -2,9 +2,10 @@
 
 use std::time::{Duration, Instant};
 
-use tetra::Context;
-
 use crate::interpolation::Lerp;
+
+/// An easing function.
+pub type Easing = fn(f32) -> f32;
 
 /// A tween for values of type `T`.
 pub struct Tween<T>
@@ -15,7 +16,7 @@ where
    end: T,
    start_time: Instant,
    duration: Duration,
-   easing: fn(f32) -> f32,
+   easing: Easing,
 }
 
 impl<T> Tween<T>
@@ -35,7 +36,7 @@ where
    }
 
    /// Starts animating, with the given start and end values, as well as a duration.
-   pub fn start(&mut self, start: T, end: T, duration: Duration, easing: fn(f32) -> f32) {
+   pub fn start(&mut self, start: T, end: T, duration: Duration, easing: Easing) {
       assert!(
          duration.as_secs_f64() > 0.0,
          "the duration must be longer than zero"
@@ -71,5 +72,11 @@ pub mod easings {
 
    pub fn cubic_out(x: f32) -> f32 {
       1.0 - f32::powf(1.0 - x, 3.0)
+   }
+
+   pub fn bounce_out(x: f32) -> f32 {
+      const C1: f32 = 2.0;
+      const C3: f32 = C1 + 1.0;
+      1.0 + C3 * f32::powf(x - 1.0, 3.0) + C1 * f32::powf(x - 1.0, 2.0)
    }
 }

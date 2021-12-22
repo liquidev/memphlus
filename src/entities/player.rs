@@ -25,7 +25,38 @@ use super::interpolation::InterpolatedPosition;
 use super::physics::{Collider, RigidBody};
 use super::{Position, Size};
 
-/// Component for storing state for platformer controls..
+/// A player's morph state.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum Morph {
+   /// No morph kind detected yet.
+   None = 0,
+
+   /// - Movement: can move freely in 8 directions. Velocity is not limited.
+   /// - Zone: none
+   /// - Player shape: metaball
+   Unshaped = 1,
+
+   /// - Movement: your typical platformer movement.
+   /// - Zone: white
+   /// - Player shape: cube
+   Platformer = 2,
+}
+
+impl Morph {
+   pub const FROM_U8: &'static [Morph] = &[Morph::None, Morph::Unshaped, Morph::Platformer];
+}
+
+/// Component for storing state of unshaped controls.
+pub struct Unshaped {}
+
+impl Unshaped {
+   pub fn new() -> Self {
+      Self {}
+   }
+}
+
+/// Component for storing state of platformer controls.
 pub struct Platformer {
    remaining_jump_ticks: u8,
    jump_buffer: u8,
@@ -33,6 +64,7 @@ pub struct Platformer {
 
    /// Animation of the `width:height` aspect ratio, used for squishing and stretching.
    aspect_ratio: Tween<f32>,
+   /// The previous velocity, for tracking when the player falls onto the ground.
    previous_velocity: Vec2<f32>,
 }
 
@@ -51,13 +83,25 @@ impl Platformer {
 /// Marker component and namespace for player-related functions.
 pub struct Player {
    checkpoint: Vec2<f32>,
+   /// Animation triggered right when the player spawns in, or turns into a different morph.
+   spawn_animation: Tween<f32>,
 }
 
 impl Player {
    const SIZE: [f32; 2] = [0.8, 0.8];
 
    pub fn new(checkpoint: Vec2<f32>) -> Self {
-      Self { checkpoint }
+      let mut player = Self {
+         checkpoint,
+         spawn_animation: Tween::new(1.0),
+      };
+      player.start_spawn_animation();
+      player
+   }
+
+   /// Starts the spawning animation.
+   pub fn start_spawn_animation(&mut self) {
+      self.spawn_animation.start(0.0, 1.0, Duration::from_millis(250), easings::bounce_out);
    }
 
    /// Ticks the player controls.
@@ -178,6 +222,8 @@ impl Player {
       for player in kill {
          let _ = world.insert_one(player, Kill::after(1));
       }
+
+      // Respawn all dead players.
       let mut respawn = Vec::new();
       for (id, (player, &RigidBody(body_handle), &Dead)) in
          world.query_mut::<(&Player, &RigidBody, &Dead)>()
@@ -188,15 +234,59 @@ impl Player {
       }
       for player in respawn {
          let _ = world.remove_one::<Dead>(player);
+         world.get_mut::<Player>(player).unwrap().start_spawn_animation();
       }
+
+      // Check if any of the players is touching a morph zone.
+      let mut morphs = Vec::new();
+      for (id, (_, morph, &RigidBody(body_handle), &Collider(collider_handle))) in
+         world.query_mut::<(&mut Player, &mut Morph, &RigidBody, &Collider)>()
+      {
+         let body = &physics.rigid_bodies[body_handle];
+         let collider = &physics.colliders[collider_handle];
+         let zone_morph = if let Some(zone_collider_handle) = physics.query.intersection_with_shape(
+            &physics.colliders,
+            body.position(),
+            collider.shape(),
+            InteractionGroups::new(CollisionGroups::PLAYER, CollisionGroups::MORPH_ZONES),
+            None,
+         ) {
+            let zone_collider = &physics.colliders[zone_collider_handle];
+            Morph::FROM_U8[zone_collider.user_data as usize]
+         } else {
+            Morph::Unshaped
+         };
+         if zone_morph != *morph {
+            morphs.push((id, zone_morph));
+            *morph = zone_morph;
+         }
+      }
+      for (player, morph) in morphs {
+         Self::morph(world, player, morph);
+         world.get_mut::<Player>(player).unwrap().start_spawn_animation();
+      }
+   }
+
+   /// Morps the given player into the given morph kind.
+   fn morph(world: &mut World, player: Entity, morph: Morph) {
+      // Clear all existing morphs.
+      let _ = world.remove_one::<Unshaped>(player);
+      let _ = world.remove_one::<Platformer>(player);
+      // Add the appropriate one given the kind.
+      let _ = match morph {
+         Morph::None => unreachable!(),
+         Morph::Unshaped => world.insert_one(player, Unshaped::new()),
+         Morph::Platformer => world.insert_one(player, Platformer::new()),
+      };
    }
 
    /// Draws players.
    pub fn draw(ctx: &mut Context, world: &mut World) -> anyhow::Result<()> {
-      for (_id, (_, platformer, InterpolatedPosition(position), &Size(size))) in
+      for (_id, (player, platformer, InterpolatedPosition(position), &Size(size))) in
          world.query_mut::<Alive<(&Player, &Platformer, &InterpolatedPosition, &Size)>>()
       {
          let position = position.blend(ctx);
+         let size = size * player.spawn_animation.get();
          let aspect = platformer.aspect_ratio.get();
          let stretched_squished = vector(aspect * size.y, size.x / aspect);
          let rect = rect(
@@ -243,12 +333,13 @@ impl Player {
          Size(size),
          RigidBody(body),
          Collider(collider),
-         Platformer::new(),
+         Morph::None,
          Camera::new(),
       ));
       // Make sure the camera is initialized to the player's viewport, to prevent jank.
       physics.update_query_pipeline();
       Camera::warp(world, physics, entity);
+      Self::tick(world, physics);
       entity
    }
 }

@@ -12,17 +12,18 @@ use crate::physics::{CollisionGroups, Physics};
 use crate::resources::Resources;
 
 use super::physics::Collider;
+use super::player::Morph;
 use super::{Position, Rotation, Size};
 
-/// Auto-generated helper trait for providing zones with palette indices.
-pub trait ZoneIndex: Component {
+/// Auto-generated helper trait for providing zones with data like palette indices.
+pub trait ZoneData: Component {
    /// Returns the unique, constant index of the zone.
    fn index() -> usize;
 }
 
 macro_rules! zone_index {
-   ($zone:ty, $index:expr) => {
-      impl ZoneIndex for $zone {
+   ($zone:ty, $index:expr, $morph:expr) => {
+      impl ZoneData for $zone {
          fn index() -> usize {
             $index
          }
@@ -37,31 +38,52 @@ pub trait ZoneSpawn: Component {
    fn spawn(world: &mut World, physics: &mut Physics, entity: Entity) {}
 }
 
+fn spawn_shaped_zone_collider(
+   world: &mut World,
+   physics: &mut Physics,
+   entity: Entity,
+   group_memberships: u32,
+   user_data: u128,
+) {
+   let Position(position) = *world.get(entity).unwrap();
+   let Size(size) = *world.get(entity).unwrap();
+   let Rotation(rotation) = *world.get(entity).unwrap();
+   let collider = ColliderBuilder::cuboid(size.x / 2.0, size.y / 2.0)
+      .translation(position.nalgebra())
+      .rotation(rotation)
+      .collision_groups(InteractionGroups::new(
+         group_memberships,
+         CollisionGroups::PLAYER,
+      ))
+      .user_data(user_data)
+      .build();
+   let collider = physics.colliders.insert(collider);
+   world.insert_one(entity, Collider(collider)).unwrap();
+}
+
 /// Marker component for platformer zones.
 pub struct PlatformerZone;
-zone_index!(PlatformerZone, 1);
+zone_index!(PlatformerZone, 1, Some(Morph::Platformer));
 
-impl ZoneSpawn for PlatformerZone {}
+impl ZoneSpawn for PlatformerZone {
+   fn spawn(world: &mut World, physics: &mut Physics, entity: Entity) {
+      spawn_shaped_zone_collider(
+         world,
+         physics,
+         entity,
+         CollisionGroups::MORPH_ZONES,
+         Morph::Platformer as u8 as u128,
+      )
+   }
+}
 
 /// Marker component for deadly zones.
 pub struct DeadlyZone;
-zone_index!(DeadlyZone, 2);
+zone_index!(DeadlyZone, 2, None);
 
 impl ZoneSpawn for DeadlyZone {
    fn spawn(world: &mut World, physics: &mut Physics, entity: Entity) {
-      let Position(position) = *world.get(entity).unwrap();
-      let Size(size) = *world.get(entity).unwrap();
-      let Rotation(rotation) = *world.get(entity).unwrap();
-      let collider = ColliderBuilder::cuboid(size.x / 2.0, size.y / 2.0)
-         .translation(position.nalgebra())
-         .rotation(rotation)
-         .collision_groups(InteractionGroups::new(
-            CollisionGroups::DEADLY,
-            CollisionGroups::PLAYER,
-         ))
-         .build();
-      let collider = physics.colliders.insert(collider);
-      world.insert_one(entity, Collider(collider)).unwrap();
+      spawn_shaped_zone_collider(world, physics, entity, CollisionGroups::DEADLY, 0);
    }
 }
 
@@ -100,7 +122,7 @@ impl Zones {
       world: &mut World,
       mut params: P,
    ) where
-      T: ZoneIndex,
+      T: ZoneData,
       P: FnMut() -> RenderParams,
    {
       let WhiteTexture(white_texture) = resources.get().unwrap();
@@ -137,7 +159,7 @@ impl Zones {
       rotation: f32,
    ) -> Entity
    where
-      Z: ZoneIndex + ZoneSpawn,
+      Z: ZoneData + ZoneSpawn,
    {
       let entity = world.spawn((kind, Position(center), Size(size), Rotation(rotation)));
       <Z as ZoneSpawn>::spawn(world, physics, entity);
