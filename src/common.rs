@@ -34,6 +34,13 @@ impl ToNalgebraVector2 for Vec2<f32> {
    }
 }
 
+/// Stretches or squishes the given size.
+///
+/// If `aspect > 1.0`, the size will be squished. If `aspect < 1.0`, the size will be stretched.
+pub fn stretch_squish(size: Vec2<f32>, aspect: f32) -> Vec2<f32> {
+   vector(size.y * aspect, size.x / aspect)
+}
+
 pub type Rect = Rectangle<f32>;
 
 /// Creates a rectangle from a point and a size.

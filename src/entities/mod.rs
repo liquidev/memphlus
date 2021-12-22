@@ -55,12 +55,13 @@ pub fn draw_systems(
    ctx: &mut Context,
    resources: &mut Resources,
    world: &mut World,
+   physics: &mut Physics,
 ) -> anyhow::Result<()> {
    graphics::set_color_mask(ctx, false, false, true, true);
    Zones::draw(ctx, resources, world);
 
    graphics::set_color_mask(ctx, true, true, false, true);
-   Player::draw(ctx, world)?;
+   Player::draw(ctx, world, physics)?;
 
    graphics::set_color_mask(ctx, true, true, true, true);
    Ok(())

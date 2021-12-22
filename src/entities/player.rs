@@ -14,7 +14,7 @@ use tetra::math::Vec2;
 use tetra::Context;
 
 use crate::assets::RemappableColors;
-use crate::common::{rect, vector, ToNalgebraVector2, ToVekVec2};
+use crate::common::{rect, stretch_squish, vector, ToNalgebraVector2, ToVekVec2};
 use crate::input::{Button, Input};
 use crate::physics::{CollisionGroups, Physics};
 use crate::tween::{easings, Tween};
@@ -140,7 +140,8 @@ impl Platformer {
 
    /// Ticks the player controls.
    fn tick_controls(ctx: &mut Context, world: &mut World, physics: &mut Physics, input: &Input) {
-      const SPEED: f32 = 175.0;
+      const ACCELERATION: f32 = 175.0;
+      const DECELERATION: f32 = 0.8;
       const JUMP_STRENGTH: f32 = 700.0;
       // The number of ticks during which the jump button can be held down to adjust height.
       const JUMP_SUSTAIN: u8 = 10;
@@ -149,21 +150,33 @@ impl Platformer {
       const JUMP_LEEWAY: u8 = 8;
       // The number of ticks during which you can still jump after falling down a ledge.
       const COYOTE_TIME: u8 = 10;
+      // The maximum velocity at which moving around is considered "walking", that is, the player
+      // retains control of their walking direction.
+      const WALKING_VELOCITY: f32 = 12.0;
 
       for (_id, (_, platformer, &RigidBody(body_handle))) in
          world.query_mut::<Alive<(&Player, &mut Platformer, &RigidBody)>>()
       {
-         {
+         let is_walking = {
             let body = &mut physics.rigid_bodies[body_handle];
-            if input.joystick().x.abs() > 0.3 {
-               body.apply_force(vector(SPEED * input.joystick().x, 0.0).nalgebra(), true);
-            }
-         }
+            let velocity = body.linvel().vek();
+            let is_walking = velocity.x.abs() < WALKING_VELOCITY;
 
+            if is_walking && input.joystick().x.abs() > 0.3 {
+               body.apply_force(
+                  vector(ACCELERATION * input.joystick().x, 0.0).nalgebra(),
+                  true,
+               );
+            }
+
+            is_walking
+         };
+
+         let is_on_ground = Self::is_on_ground(physics, body_handle);
          if input.button_just_pressed(ctx, Button::Jump) {
             platformer.jump_buffer = JUMP_LEEWAY;
          }
-         if Self::is_on_ground(physics, body_handle) {
+         if is_on_ground {
             platformer.air_time = COYOTE_TIME;
          }
          let body = &mut physics.rigid_bodies[body_handle];
@@ -196,9 +209,13 @@ impl Platformer {
          platformer.jump_buffer = platformer.jump_buffer.saturating_sub(1);
          platformer.remaining_jump_ticks = platformer.remaining_jump_ticks.saturating_sub(1);
 
-         let velocity = *body.linvel();
-         let decelerated_x = velocity.x * 0.8;
-         body.set_linvel(Vec2::new(decelerated_x, velocity.y).nalgebra(), true);
+         let mut velocity = body.linvel().vek();
+         velocity.x *= if is_walking || is_on_ground {
+            DECELERATION
+         } else {
+            1.0
+         };
+         body.set_linvel(velocity.nalgebra(), true);
 
          let velocity = body.linvel();
          if platformer.previous_velocity.y > 0.01 && velocity.y <= 0.01 {
@@ -363,61 +380,81 @@ impl Player {
    fn draw_morph<M, F>(ctx: &mut Context, world: &mut World, mut draw: F) -> anyhow::Result<()>
    where
       M: Component,
-      F: FnMut(&mut Context, &M, Vec2<f32>, Vec2<f32>) -> anyhow::Result<()>,
+      F: FnMut(&mut Context, &M, Vec2<f32>, Vec2<f32>, RigidBodyHandle) -> anyhow::Result<()>,
    {
-      for (_id, (player, morph, InterpolatedPosition(position), &Size(size))) in
-         world.query_mut::<Alive<(&Player, &M, &InterpolatedPosition, &Size)>>()
+      for (
+         _id,
+         (player, morph, InterpolatedPosition(position), &Size(size), &RigidBody(body_handle)),
+      ) in world.query_mut::<Alive<(&Player, &M, &InterpolatedPosition, &Size, &RigidBody)>>()
       {
          let size = size * player.spawn_animation.get();
-         draw(ctx, morph, position.blend(ctx), size)?;
+         draw(ctx, morph, position.blend(ctx), size, body_handle)?;
       }
       Ok(())
    }
 
    /// Draws players.
-   pub fn draw(ctx: &mut Context, world: &mut World) -> anyhow::Result<()> {
-      Self::draw_morph::<Unshaped, _>(ctx, world, |ctx, _unshaped, position, size| {
-         const SCALE: f32 = 8.0;
-         const INV_SCALE: f32 = 1.0 / SCALE;
-         let radius = size.x / 2.0;
-         // TODO(liquidev): Metaballs.
-         GeometryBuilder::new()
-            .set_color(RemappableColors::BACKGROUND)
-            .circle(ShapeStyle::Fill, vector(0.0, 0.0), radius * SCALE)?
-            .set_color(RemappableColors::FOREGROUND)
-            .circle(
-               ShapeStyle::Stroke(0.1 * SCALE),
-               vector(0.0, 0.0),
-               radius * SCALE,
-            )?
-            .build_mesh(ctx)?
-            .draw(
-               ctx,
-               DrawParams::new().position(position).scale(vector(INV_SCALE, INV_SCALE)),
-            );
-         Ok(())
-      })?;
+   pub fn draw(ctx: &mut Context, world: &mut World, physics: &mut Physics) -> anyhow::Result<()> {
+      Self::draw_morph::<Unshaped, _>(
+         ctx,
+         world,
+         |ctx, _unshaped, position, size, body_handle| {
+            const SCALE: f32 = 8.0;
+            const INV_SCALE: f32 = 1.0 / SCALE;
+            let velocity = physics.rigid_bodies[body_handle].linvel().vek();
+            let rotation = velocity.y.atan2(velocity.x);
+            let aspect = 1.0 + velocity.magnitude_squared() * 0.001;
+            let stretched_squished = stretch_squish(size / 2.0, aspect);
+            // TODO(liquidev): Metaballs.
+            GeometryBuilder::new()
+               .set_color(RemappableColors::BACKGROUND)
+               .ellipse(
+                  ShapeStyle::Fill,
+                  vector(0.0, 0.0),
+                  stretched_squished * SCALE,
+               )?
+               .set_color(RemappableColors::FOREGROUND)
+               .ellipse(
+                  ShapeStyle::Stroke(0.1 * SCALE),
+                  vector(0.0, 0.0),
+                  stretched_squished * SCALE,
+               )?
+               .build_mesh(ctx)?
+               .draw(
+                  ctx,
+                  DrawParams::new()
+                     .position(position)
+                     .scale(vector(INV_SCALE, INV_SCALE))
+                     .rotation(rotation),
+               );
+            Ok(())
+         },
+      )?;
 
-      Self::draw_morph::<Platformer, _>(ctx, world, |ctx, platformer, position, size| {
-         let aspect = platformer.aspect_ratio.get();
-         let stretched_squished = vector(aspect * size.y, size.x / aspect);
-         let rect = rect(
-            position
-               + vector(
-                  -stretched_squished.x / 2.0,
-                  -stretched_squished.y + size.y / 2.0,
-               ),
-            stretched_squished,
-         );
-         GeometryBuilder::new()
-            .set_color(RemappableColors::BACKGROUND)
-            .rectangle(ShapeStyle::Fill, rect)?
-            .set_color(RemappableColors::FOREGROUND)
-            .rectangle(ShapeStyle::Stroke(0.1), rect)?
-            .build_mesh(ctx)?
-            .draw(ctx, DrawParams::new());
-         Ok(())
-      })?;
+      Self::draw_morph::<Platformer, _>(
+         ctx,
+         world,
+         |ctx, platformer, position, size, _body_handle| {
+            let aspect = platformer.aspect_ratio.get();
+            let stretched_squished = stretch_squish(size, aspect);
+            let rect = rect(
+               position
+                  + vector(
+                     -stretched_squished.x / 2.0,
+                     -stretched_squished.y + size.y / 2.0,
+                  ),
+               stretched_squished,
+            );
+            GeometryBuilder::new()
+               .set_color(RemappableColors::BACKGROUND)
+               .rectangle(ShapeStyle::Fill, rect)?
+               .set_color(RemappableColors::FOREGROUND)
+               .rectangle(ShapeStyle::Stroke(0.1), rect)?
+               .build_mesh(ctx)?
+               .draw(ctx, DrawParams::new());
+            Ok(())
+         },
+      )?;
 
       Ok(())
    }
