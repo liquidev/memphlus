@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <object type="text" width="64" height="16">
+  <text fontfamily="Lexend Deca" pixelsize="12" halign="center">Title T</text>
+ </object>
+</template>

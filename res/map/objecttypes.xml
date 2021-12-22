@@ -3,6 +3,7 @@
  <objecttype name="camera_view" color="#77767b"/>
  <objecttype name="checkpoint" color="#33d17a"/>
  <objecttype name="collider_rect" color="#3584e4"/>
+ <objecttype name="text" color="#000000"/>
  <objecttype name="trigger" color="#ff7800">
   <property name="trigger" type="object" default="0"/>
   <property name="which" type="int" default="0"/>

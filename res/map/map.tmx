@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="11" nextobjectid="61">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="1" backgroundcolor="#ffffff" nextlayerid="11" nextobjectid="63">
  <editorsettings>
   <chunksize width="8" height="8"/>
  </editorsettings>
@@ -230,9 +230,10 @@
  </layer>
  <objectgroup color="#ffc0c0" id="2" name="zones">
   <object id="3" template="templates/zone_platformer.tx" x="-32" y="0" width="1304" height="384"/>
+  <object id="59" template="templates/zone_platformer.tx" x="1568" y="0" width="336" height="432"/>
  </objectgroup>
  <objectgroup color="#7f7f7f" id="3" name="camera_views" opacity="0.3">
-  <object id="5" template="templates/camera_view.tx" name="" x="-16" y="48" width="320" height="176"/>
+  <object id="5" template="templates/camera_view.tx" x="-16" y="48" width="320" height="176"/>
   <object id="36" template="templates/camera_view.tx" x="304" y="48" width="320" height="176"/>
   <object id="42" template="templates/camera_view.tx" x="624" y="48" width="480" height="272"/>
   <object id="52" template="templates/camera_view.tx" x="1104" y="48" width="336" height="160"/>
@@ -244,8 +245,12 @@
 to move around</text>
   </object>
   <object id="38" type="text" x="352" y="80" width="224" height="48">
-   <text fontfamily="Lexend Deca" pixelsize="12" halign="center">Space
+   <text fontfamily="Lexend Deca" pixelsize="12" halign="center">Space or X
 to jump</text>
+  </object>
+  <object id="62" template="templates/text.tx" x="1568" y="64" width="336" height="48">
+   <text fontfamily="Lexend Deca" pixelsize="15" halign="center">W  A  S  D    or    ↑  ←  ↓  →
+to accelerate</text>
   </object>
  </objectgroup>
  <objectgroup color="#f66151" id="6" name="entities">
@@ -264,7 +269,6 @@ to jump</text>
   <object id="53" type="collider" x="1104" y="0" width="336" height="96"/>
   <object id="57" type="collider" x="1872" y="160" width="160" height="48"/>
   <object id="58" type="collider" x="2032" y="0" width="48" height="160"/>
-  <object id="59" template="templates/zone_platformer.tx" x="1568" y="0" width="336" height="432"/>
   <object id="60" type="collider" x="1408" y="-80" width="656" height="80"/>
  </objectgroup>
  <objectgroup color="#ff7800" id="10" name="triggers">
