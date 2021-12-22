@@ -8,6 +8,7 @@ use crate::interpolation::Interpolated;
 use super::Position;
 
 /// A component for interpolating the position of a component over many frames.
+#[derive(Debug)]
 pub struct InterpolatedPosition(pub Interpolated<Vec2<f32>>);
 
 impl InterpolatedPosition {

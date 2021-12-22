@@ -13,6 +13,7 @@ mod state;
 mod states;
 mod tiled;
 mod transform;
+mod tween;
 
 use anyhow::Context as AnyhowContext;
 use common::WhiteTexture;

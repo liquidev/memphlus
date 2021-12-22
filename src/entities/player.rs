@@ -1,5 +1,7 @@
 //! Components and systems for the player entity.
 
+use std::time::Duration;
+
 use hecs::{Entity, World};
 use rapier2d::math::Isometry;
 use rapier2d::prelude::{
@@ -12,9 +14,10 @@ use tetra::math::Vec2;
 use tetra::Context;
 
 use crate::assets::RemappableColors;
-use crate::common::{rect, vector, ToNalgebraVector2};
+use crate::common::{rect, vector, ToNalgebraVector2, ToVekVec2};
 use crate::input::{Button, Input};
 use crate::physics::{CollisionGroups, Physics};
+use crate::tween::{easings, Tween};
 
 use super::camera::Camera;
 use super::dead::{Alive, Dead, Kill};
@@ -27,6 +30,10 @@ pub struct Platformer {
    remaining_jump_ticks: u8,
    jump_buffer: u8,
    air_time: u8,
+
+   /// Animation of the `width:height` aspect ratio, used for squishing and stretching.
+   aspect_ratio: Tween<f32>,
+   previous_velocity: Vec2<f32>,
 }
 
 impl Platformer {
@@ -35,6 +42,8 @@ impl Platformer {
          remaining_jump_ticks: 0,
          jump_buffer: 0,
          air_time: 0,
+         aspect_ratio: Tween::new(1.0),
+         previous_velocity: vector(0.0, 0.0),
       }
    }
 }
@@ -100,6 +109,14 @@ impl Player {
             let strength = platformer.remaining_jump_ticks as f32 / JUMP_SUSTAIN as f32;
             let strength = strength.powf(6.0);
             body.apply_force(vector(0.0, -JUMP_STRENGTH * strength).nalgebra(), true);
+            if input.button_just_pressed(ctx, Button::Jump) {
+               platformer.aspect_ratio.start(
+                  0.6,
+                  1.0,
+                  Duration::from_millis(350),
+                  easings::cubic_out,
+               );
+            }
          }
          if !input.button_down(ctx, Button::Jump) {
             platformer.remaining_jump_ticks = 0;
@@ -112,6 +129,12 @@ impl Player {
          let velocity = *body.linvel();
          let decelerated_x = velocity.x * 0.8;
          body.set_linvel(Vec2::new(decelerated_x, velocity.y).nalgebra(), true);
+
+         let velocity = body.linvel();
+         if platformer.previous_velocity.y > 0.01 && velocity.y <= 0.01 {
+            platformer.aspect_ratio.start(1.5, 1.0, Duration::from_millis(250), easings::cubic_out);
+         }
+         platformer.previous_velocity = velocity.vek();
       }
    }
 
@@ -170,11 +193,20 @@ impl Player {
 
    /// Draws players.
    pub fn draw(ctx: &mut Context, world: &mut World) -> anyhow::Result<()> {
-      for (_id, (_, InterpolatedPosition(position), &Size(size))) in
-         world.query_mut::<Alive<(&Player, &InterpolatedPosition, &Size)>>()
+      for (_id, (_, platformer, InterpolatedPosition(position), &Size(size))) in
+         world.query_mut::<Alive<(&Player, &Platformer, &InterpolatedPosition, &Size)>>()
       {
          let position = position.blend(ctx);
-         let rect = rect(position - size / 2.0, size);
+         let aspect = platformer.aspect_ratio.get();
+         let stretched_squished = vector(aspect * size.y, size.x / aspect);
+         let rect = rect(
+            position
+               + vector(
+                  -stretched_squished.x / 2.0,
+                  -stretched_squished.y + size.y / 2.0,
+               ),
+            stretched_squished,
+         );
          let mesh = GeometryBuilder::new()
             .set_color(RemappableColors::BACKGROUND)
             .rectangle(ShapeStyle::Fill, rect)?
