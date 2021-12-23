@@ -1,23 +1,20 @@
 //! Asset loading and bundling.
 
-use std::borrow::Cow;
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
-use std::path::PathBuf;
 use std::str::FromStr;
-use std::time::{Duration, Instant};
 
 use serde::de::IntoDeserializer;
 use serde::Deserialize;
 use tetra::graphics::text::{Font, Text, VectorFontBuilder};
-use tetra::graphics::{Color, DrawParams, Texture};
+use tetra::graphics::{Color, DrawParams, FilterMode, Texture};
 use tetra::Context;
-use vek::Vec2;
 
-use crate::common::{asset_path, load_asset, vector};
+use crate::common::{asset_path, vector};
 use crate::resources::Resources;
 use crate::tiled::TextHAlign;
+use crate::transform::TransformStack;
 
 /// A namespace for colors that are remappable to various colors in the palette.
 pub struct RemappableColors;
@@ -61,6 +58,8 @@ pub struct FontSize {
 }
 
 impl FontSize {
+   const SCALE: f32 = 6.0;
+
    /// Draws text to the screen, aligned according to the provided alignment and width.
    ///
    /// This is an internal function that does not perform any line splitting.
@@ -75,7 +74,7 @@ impl FontSize {
       let mut text_object = self.text.borrow_mut();
       text_object.set_content(line);
       let bounds = text_object.get_bounds(ctx).unwrap();
-      let text_width = bounds.width;
+      let text_width = (bounds.width - bounds.x) / Self::SCALE;
       let x = match alignment {
          TextHAlign::Left => 0.0,
          TextHAlign::Center => alignment_width / 2.0 - text_width / 2.0,
@@ -83,6 +82,7 @@ impl FontSize {
       };
       let params = DrawParams {
          position: params.position + vector(x, 0.0),
+         scale: params.scale * vector(Self::SCALE, Self::SCALE).recip(),
          ..params
       };
       text_object.draw(ctx, params);
@@ -97,7 +97,7 @@ impl FontSize {
       alignment_width: f32,
       params: DrawParams,
    ) {
-      const LINE_HEIGHT: f32 = 1.4;
+      const LINE_HEIGHT: f32 = 1.2;
       let line_height = self.size * LINE_HEIGHT;
       let mut y = 0.0;
       for line in text.split('\n') {
@@ -121,7 +121,8 @@ impl FontSizes {
    /// Loads the font with the given size, if not already loaded.
    pub fn load(&mut self, ctx: &mut Context, size: u32) -> anyhow::Result<&FontSize> {
       if !self.sizes.contains_key(&size) {
-         let font = self.builder.with_size(ctx, size as f32)?;
+         let mut font = self.builder.with_size(ctx, size as f32 * FontSize::SCALE)?;
+         font.set_filter_mode(ctx, FilterMode::Linear);
          self.sizes.insert(
             size,
             FontSize {

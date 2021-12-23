@@ -112,7 +112,13 @@ impl State {
       let camera_rect = self.apply_camera_transform(ctx);
 
       self.map.draw(ctx, &mut self.tstack)?;
-      entities::draw_systems(ctx, resources, &mut self.world, &mut self.physics)?;
+      entities::draw_systems(
+         ctx,
+         &mut self.tstack,
+         resources,
+         &mut self.world,
+         &mut self.physics,
+      )?;
 
       self.tstack.restore(ctx);
 

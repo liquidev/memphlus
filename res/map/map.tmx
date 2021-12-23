@@ -281,7 +281,7 @@
  </objectgroup>
  <objectgroup id="9" name="texts">
   <object id="37" template="templates/text.tx" x="-16" y="80" width="320" height="32">
-   <text fontfamily="Lexend" pixelsize="12" halign="center">←  →     or     A  D
+   <text fontfamily="Lexend" pixelsize="12" halign="center">Arrow Keys     or     A  D
 to move around</text>
   </object>
   <object id="38" template="templates/text.tx" x="304" y="80" width="320" height="32">
@@ -289,12 +289,12 @@ to move around</text>
 to jump</text>
   </object>
   <object id="62" template="templates/text.tx" x="1568" y="64" width="336" height="48">
-   <text fontfamily="Lexend" pixelsize="15" halign="center">W  A  S  D    or    ↑  ←  ↓  →
+   <text fontfamily="Lexend" pixelsize="15" halign="center">W  A  S  D    or    Arrow Keys
 to accelerate</text>
   </object>
  </objectgroup>
  <objectgroup color="#f66151" id="6" name="entities">
-  <object id="11" name="Player" type="player" x="1148" y="136">
+  <object id="11" name="Player" type="player" x="136" y="132">
    <point/>
   </object>
   <object id="30" template="templates/zone_deadly.tx" x="792" y="200" width="144" height="152" rotation="0"/>

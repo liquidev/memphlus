@@ -7,12 +7,14 @@ use tetra::{graphics, Context};
 use crate::input::Input;
 use crate::physics::Physics;
 use crate::resources::Resources;
+use crate::transform::TransformStack;
 
 use self::camera::Camera;
 use self::dead::Kill;
 use self::interpolation::tick_interpolation;
 use self::physics::tick_physics;
 use self::player::Player;
+use self::text::Text;
 use self::zones::Zones;
 
 pub mod camera;
@@ -54,6 +56,7 @@ pub fn tick_systems(ctx: &mut Context, world: &mut World, physics: &mut Physics,
 /// Draws with all the systems.
 pub fn draw_systems(
    ctx: &mut Context,
+   tstack: &mut TransformStack,
    resources: &mut Resources,
    world: &mut World,
    physics: &mut Physics,
@@ -62,6 +65,7 @@ pub fn draw_systems(
    Zones::draw(ctx, resources, world);
 
    graphics::set_color_mask(ctx, true, true, false, true);
+   Text::draw(ctx, tstack, resources, world)?;
    Player::draw(ctx, world, physics)?;
 
    graphics::set_color_mask(ctx, true, true, true, true);

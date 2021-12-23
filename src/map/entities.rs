@@ -2,7 +2,7 @@
 
 use std::str::FromStr;
 
-use hecs::{Entity, World};
+use hecs::World;
 use log::{error, warn};
 use serde::de::IntoDeserializer;
 use serde::Deserialize;
@@ -97,12 +97,22 @@ impl Map {
       if let Some(text) = data.text {
          match FontFamily::from_str(&text.font_family) {
             Ok(font_family) => {
-               Text::spawn(world, rect, font_family, text.h_align, text.text);
+               Text::spawn(
+                  world,
+                  rect,
+                  font_family,
+                  text.h_align,
+                  text.pixel_size,
+                  text.text,
+               );
             }
             Err(error) => error!("object {}: invalid font family ({})", data.id, error),
          }
       } else {
-         error!("object {} of type 'text' is not a text object", data.id);
+         error!(
+            "object {} of type 'text' is not a text object. maybe use the text.tx template?",
+            data.id
+         );
       }
    }
 

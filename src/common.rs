@@ -4,11 +4,9 @@ use std::path::{Path, PathBuf};
 
 use log::debug;
 use tetra::graphics::mesh::Vertex;
-use tetra::graphics::{Color, Rectangle, Texture};
+use tetra::graphics::{Color, Rectangle};
 use tetra::math::Vec2;
 use tetra::{window, Context};
-
-use crate::resources::Resources;
 
 /// Creates a 2D vector.
 pub fn vector(x: f32, y: f32) -> Vec2<f32> {
