@@ -17,7 +17,7 @@ pub struct CameraView;
 
 impl CameraView {
    /// Spawns a new camera view into the world.
-   pub fn spawn(world: &mut World, physics: &mut Physics, rect: Rect) -> Entity {
+   pub fn spawn(world: &mut World, physics: &mut Physics, entity: Entity, rect: Rect) {
       let collider = ColliderBuilder::cuboid(rect.width / 2.0, rect.height / 2.0)
          .translation(rect.center().nalgebra())
          .collision_groups(InteractionGroups::new(
@@ -26,15 +26,17 @@ impl CameraView {
          ))
          .build();
       let collider = physics.colliders.insert(collider);
-      let entity = world.spawn((
-         CameraView,
-         Position(rect.top_left()),
-         Size(vector(rect.width, rect.height)),
-         Collider(collider),
-      ));
+      world.spawn_at(
+         entity,
+         (
+            CameraView,
+            Position(rect.top_left()),
+            Size(vector(rect.width, rect.height)),
+            Collider(collider),
+         ),
+      );
       // The entity ID of the camera view is accessible through the collider's user data.
       physics.colliders[collider].user_data = u64::from(entity.to_bits()) as u128;
-      entity
    }
 }
 

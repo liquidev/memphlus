@@ -13,7 +13,7 @@ use crate::common::{vector, Axis, ToNalgebraVector2};
 use crate::physics::{CollisionGroups, Physics};
 use crate::tiled;
 
-use super::{Chunk, Layer, Map, Tileset};
+use super::{Chunk, Layer, Loader, Map, Tileset};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[repr(u8)]
@@ -190,7 +190,7 @@ pub enum Corner {
    BottomLeft,
 }
 
-impl Map {
+impl Loader {
    /// Creates a new tile layer from a list of chunks.
    pub(super) fn create_tile_layer(
       in_chunks: Vec<tiled::Chunk>,

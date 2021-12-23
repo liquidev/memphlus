@@ -39,7 +39,7 @@ pub trait ZoneSpawn: Component {
    fn spawn(world: &mut World, physics: &mut Physics, entity: Entity) {}
 }
 
-fn spawn_shaped_zone_collider(
+fn init_shaped_zone_collider(
    world: &mut World,
    physics: &mut Physics,
    entity: Entity,
@@ -68,7 +68,7 @@ zone_index!(PlatformerZone, 1, Some(Morph::Platformer));
 
 impl ZoneSpawn for PlatformerZone {
    fn spawn(world: &mut World, physics: &mut Physics, entity: Entity) {
-      spawn_shaped_zone_collider(
+      init_shaped_zone_collider(
          world,
          physics,
          entity,
@@ -84,7 +84,7 @@ zone_index!(DeadlyZone, 2, None);
 
 impl ZoneSpawn for DeadlyZone {
    fn spawn(world: &mut World, physics: &mut Physics, entity: Entity) {
-      spawn_shaped_zone_collider(world, physics, entity, CollisionGroups::DEADLY, 0);
+      init_shaped_zone_collider(world, physics, entity, CollisionGroups::DEADLY, 0);
    }
 }
 
@@ -154,16 +154,18 @@ impl Zones {
    pub fn spawn<Z>(
       world: &mut World,
       physics: &mut Physics,
+      entity: Entity,
       kind: Z,
       center: Vec2<f32>,
       size: Vec2<f32>,
       rotation: f32,
-   ) -> Entity
-   where
+   ) where
       Z: ZoneData + ZoneSpawn,
    {
-      let entity = world.spawn((kind, Position(center), Size(size), Rotation(rotation)));
+      world.spawn_at(
+         entity,
+         (kind, Position(center), Size(size), Rotation(rotation)),
+      );
       <Z as ZoneSpawn>::spawn(world, physics, entity);
-      entity
    }
 }

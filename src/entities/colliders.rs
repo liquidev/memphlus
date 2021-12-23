@@ -13,7 +13,7 @@ pub struct RectCollider;
 
 impl RectCollider {
    /// Spawns a new rectangular collider into the world.
-   pub fn spawn(world: &mut World, physics: &mut Physics, rect: Rect) -> Entity {
+   pub fn spawn(world: &mut World, physics: &mut Physics, entity: Entity, rect: Rect) {
       let body = RigidBodyBuilder::new_static().translation(rect.center().nalgebra()).build();
       let body = physics.rigid_bodies.insert(body);
       let collider = ColliderBuilder::cuboid(rect.width / 2.0, rect.height / 2.0)
@@ -25,6 +25,6 @@ impl RectCollider {
       let collider =
          physics.colliders.insert_with_parent(collider, body, &mut physics.rigid_bodies);
 
-      world.spawn((RectCollider, RigidBody(body), Collider(collider)))
+      world.spawn_at(entity, (RectCollider, RigidBody(body), Collider(collider)));
    }
 }

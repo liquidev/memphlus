@@ -10,13 +10,13 @@ use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
 use anyhow::Context;
-use hecs::World;
+use hecs::{Entity, World};
 use tetra::graphics::mesh::Mesh;
 use tetra::math::Vec2;
 
 use crate::common::vector;
 use crate::physics::Physics;
-use crate::tiled::{self, TileId};
+use crate::tiled::{self, ObjectId, TileId};
 
 pub use meshes::*;
 
@@ -125,23 +125,43 @@ impl Map {
       let tileset = Tileset::try_from(tileset)?;
       let map = tiled::Map::load_from_json(map_json)?;
       Ok(Self {
-         layers: Self::load_layers(map.layers, world, physics, &tileset),
+         layers: Loader {
+            objects: HashMap::new(),
+         }
+         .load_layers(map.layers, world, physics, &tileset),
          tileset,
       })
+   }
+}
+
+/// Map loading state.
+pub(super) struct Loader {
+   objects: HashMap<ObjectId, Entity>,
+}
+
+impl Loader {
+   /// Returns the entity ID of the object with the given ID.
+   pub(super) fn entity(&mut self, world: &mut World, object_id: ObjectId) -> Entity {
+      if !self.objects.contains_key(&object_id) {
+         self.objects.insert(object_id, world.reserve_entity());
+      }
+      *self.objects.get(&object_id).unwrap()
    }
 
    /// Loads all layers from the given Vec.
    fn load_layers(
+      &mut self,
       layers: Vec<tiled::Layer>,
       world: &mut World,
       physics: &mut Physics,
       tileset: &Tileset,
    ) -> Vec<Layer> {
-      layers.into_iter().map(|layer| Self::load_layer(layer, world, physics, tileset)).collect()
+      layers.into_iter().map(|layer| self.load_layer(layer, world, physics, tileset)).collect()
    }
 
    /// Loads a single tiled layer into an actual layer.
    fn load_layer(
+      &mut self,
       data: tiled::Layer,
       world: &mut World,
       physics: &mut Physics,
@@ -149,7 +169,7 @@ impl Map {
    ) -> Layer {
       match data.kind {
          tiled::LayerKind::Tile { chunks } => Self::create_tile_layer(chunks, tileset, physics),
-         tiled::LayerKind::Object { objects } => Self::create_object_layer(objects, world, physics),
+         tiled::LayerKind::Object { objects } => self.create_object_layer(objects, world, physics),
       }
    }
 }

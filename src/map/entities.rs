@@ -2,7 +2,7 @@
 
 use std::str::FromStr;
 
-use hecs::World;
+use hecs::{Entity, World};
 use log::{error, warn};
 use serde::de::IntoDeserializer;
 use serde::Deserialize;
@@ -18,7 +18,7 @@ use crate::entities::zones::{DeadlyZone, PlatformerZone, ZoneData, ZoneSpawn, Zo
 use crate::physics::Physics;
 use crate::tiled;
 
-use super::{Layer, Map};
+use super::{Layer, Loader, Map};
 
 /// Viable entity kinds, as stored in the map.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
@@ -42,16 +42,17 @@ impl FromStr for EntityKind {
    }
 }
 
-impl Map {
+impl Loader {
    /// Creates an object layer.
    pub(super) fn create_object_layer(
+      &mut self,
       objects: Vec<tiled::Object>,
       world: &mut World,
       physics: &mut Physics,
    ) -> Layer {
       for object in objects {
          if let Ok(kind) = EntityKind::from_str(&object.kind) {
-            Self::spawn_entity(kind, object, world, physics);
+            self.spawn_entity(kind, object, world, physics);
          } else {
             warn!("object {} of unknown kind {:?}", object.id, &object.kind);
          }
@@ -61,11 +62,13 @@ impl Map {
 
    /// Spawns an entity of the given kind into the world.
    fn spawn_entity(
+      &mut self,
       kind: EntityKind,
       data: tiled::Object,
       world: &mut World,
       physics: &mut Physics,
    ) {
+      let entity = self.entity(world, data.id);
       let data = tiled::Object {
          x: data.x / Map::tile_size().x,
          y: data.y / Map::tile_size().y,
@@ -79,26 +82,29 @@ impl Map {
       let rect = rect(position, size);
       match kind {
          EntityKind::Player => {
-            Player::spawn(world, physics, position);
+            Player::spawn(world, physics, entity, position);
          }
-         EntityKind::Text => Self::spawn_text(data, world),
-         EntityKind::Collider => Self::spawn_collider(&data, world, physics),
+         EntityKind::Text => Self::spawn_text(data, world, entity),
+         EntityKind::Collider => Self::spawn_collider(&data, world, physics, entity),
          EntityKind::CameraView => {
-            CameraView::spawn(world, physics, rect);
+            CameraView::spawn(world, physics, entity, rect);
          }
-         EntityKind::ZoneDeadly => Self::spawn_zone(&data, world, physics, DeadlyZone),
-         EntityKind::ZonePlatformer => Self::spawn_zone(&data, world, physics, PlatformerZone),
+         EntityKind::ZoneDeadly => Self::spawn_zone(&data, world, physics, entity, DeadlyZone),
+         EntityKind::ZonePlatformer => {
+            Self::spawn_zone(&data, world, physics, entity, PlatformerZone)
+         }
       };
    }
 
    /// Spawns text into the world.
-   fn spawn_text(data: tiled::Object, world: &mut World) {
+   fn spawn_text(data: tiled::Object, world: &mut World, entity: Entity) {
       let rect = data.rect();
       if let Some(text) = data.text {
          match FontFamily::from_str(&text.font_family) {
             Ok(font_family) => {
                Text::spawn(
                   world,
+                  entity,
                   rect,
                   font_family,
                   text.h_align,
@@ -117,8 +123,13 @@ impl Map {
    }
 
    /// Spawns an appropriate collider entity.
-   fn spawn_collider(data: &tiled::Object, world: &mut World, physics: &mut Physics) {
-      RectCollider::spawn(world, physics, data.rect());
+   fn spawn_collider(
+      data: &tiled::Object,
+      world: &mut World,
+      physics: &mut Physics,
+      entity: Entity,
+   ) {
+      RectCollider::spawn(world, physics, entity, data.rect());
    }
 
    /// Spawns a zone of the given kind.
@@ -126,6 +137,7 @@ impl Map {
       data: &tiled::Object,
       world: &mut World,
       physics: &mut Physics,
+      entity: Entity,
       kind: impl ZoneData + ZoneSpawn,
    ) {
       let top_left = vector(data.x, data.y);
@@ -133,7 +145,7 @@ impl Map {
       let center_offset = size / 2.0;
       let rotation = Mat2::rotation_z(data.rotation);
       let center = top_left + rotation * center_offset;
-      Zones::spawn(world, physics, kind, center, size, data.rotation);
+      Zones::spawn(world, physics, entity, kind, center, size, data.rotation);
    }
 }
 

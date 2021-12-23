@@ -7,14 +7,13 @@ use std::str::FromStr;
 
 use serde::de::IntoDeserializer;
 use serde::Deserialize;
-use tetra::graphics::text::{Font, Text, VectorFontBuilder};
+use tetra::graphics::text::{Text, VectorFontBuilder};
 use tetra::graphics::{Color, DrawParams, FilterMode, Texture};
 use tetra::Context;
 
 use crate::common::{asset_path, vector};
 use crate::resources::Resources;
 use crate::tiled::TextHAlign;
-use crate::transform::TransformStack;
 
 /// A namespace for colors that are remappable to various colors in the palette.
 pub struct RemappableColors;
@@ -53,7 +52,6 @@ impl WhiteTexture {
 /// A storage for a single size of a font.
 pub struct FontSize {
    size: f32,
-   font: Font,
    text: RefCell<Text>,
 }
 
@@ -128,16 +126,10 @@ impl FontSizes {
             FontSize {
                size: size as f32,
                text: RefCell::new(Text::new("", font.clone())),
-               font,
             },
          );
       }
       Ok(self.sizes.get(&size).unwrap())
-   }
-
-   /// Returns the font with the given size, if loaded. Otherwise returns `None`.
-   pub fn get(&self, size: u32) -> Option<&FontSize> {
-      self.sizes.get(&size)
    }
 }
 

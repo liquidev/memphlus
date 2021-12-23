@@ -5,7 +5,7 @@ use tetra::graphics::DrawParams;
 use tetra::Context;
 
 use crate::assets::{FontFamily, Fonts, RemappableColors};
-use crate::common::{vector, Rect, RectVectors};
+use crate::common::{Rect, RectVectors};
 use crate::map::Map;
 use crate::resources::Resources;
 use crate::tiled::TextHAlign;
@@ -56,21 +56,25 @@ impl Text {
    /// Spawns a text entity into the world.
    pub fn spawn(
       world: &mut World,
+      entity: Entity,
       rect: Rect,
       font_family: FontFamily,
       h_align: TextHAlign,
       size: u32,
       text: String,
-   ) -> Entity {
-      world.spawn((
-         Position(rect.position()),
-         Size(rect.size()),
-         Text {
-            font_family,
-            h_align,
-            size,
-            text,
-         },
-      ))
+   ) {
+      world.spawn_at(
+         entity,
+         (
+            Position(rect.position()),
+            Size(rect.size()),
+            Text {
+               font_family,
+               h_align,
+               size,
+               text,
+            },
+         ),
+      );
    }
 }

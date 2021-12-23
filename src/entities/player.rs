@@ -466,7 +466,7 @@ impl Player {
    }
 
    /// Spawns a new player into the world.
-   pub fn spawn(world: &mut World, physics: &mut Physics, position: Vec2<f32>) -> Entity {
+   pub fn spawn(world: &mut World, physics: &mut Physics, entity: Entity, position: Vec2<f32>) {
       let size = Vec2::from_slice(&Platformer::SIZE);
 
       let body =
@@ -483,20 +483,22 @@ impl Player {
       let collider =
          physics.colliders.insert_with_parent(collider, body, &mut physics.rigid_bodies);
 
-      let entity = world.spawn((
-         Player::new(position),
-         Position(position),
-         InterpolatedPosition::new(position),
-         Size(size),
-         RigidBody(body),
-         Collider(collider),
-         Morph::None,
-         Camera::new(),
-      ));
+      world.spawn_at(
+         entity,
+         (
+            Player::new(position),
+            Position(position),
+            InterpolatedPosition::new(position),
+            Size(size),
+            RigidBody(body),
+            Collider(collider),
+            Morph::None,
+            Camera::new(),
+         ),
+      );
       // Make sure the camera is initialized to the player's viewport, to prevent jank.
       physics.update_query_pipeline();
       Camera::warp(world, physics, entity);
       Self::tick(world, physics);
-      entity
    }
 }
