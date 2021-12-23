@@ -308,11 +308,15 @@ impl Player {
 
       // Respawn all dead players.
       let mut respawn = Vec::new();
-      for (id, (player, &RigidBody(body_handle), &Dead)) in
-         world.query_mut::<(&Player, &RigidBody, &Dead)>()
+      for (id, (player, InterpolatedPosition(ip), &RigidBody(body_handle), &Dead)) in
+         world.query_mut::<(&Player, &mut InterpolatedPosition, &RigidBody, &Dead)>()
       {
          let body = &mut physics.rigid_bodies[body_handle];
+         ip.set(player.checkpoint);
+         ip.reset();
          body.set_translation(player.checkpoint.nalgebra(), true);
+         // TODO(liquidev): Velocity-preserving death might be a neat mechanic.
+         body.set_linvel(vector(0.0, 0.0).nalgebra(), true);
          respawn.push(id);
       }
       for player in respawn {

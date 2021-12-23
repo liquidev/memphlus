@@ -6,16 +6,6 @@
  <tileset firstgid="1" source="tileset.tsx"/>
  <layer id="1" name="tiles" width="100" height="100">
   <data encoding="csv">
-   <chunk x="0" y="0" width="8" height="8">
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-64,0,0,0,0,0,0,0,
-64,0,0,0,0,0,0,0,
-64,0,0,0,0,0,0,0,
-64,0,0,0,0,0,0,0
-</chunk>
    <chunk x="64" y="0" width="8" height="8">
 0,0,0,0,0,10,0,0,
 0,0,0,0,0,10,0,0,
@@ -56,10 +46,20 @@
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0
 </chunk>
+   <chunk x="-8" y="8" width="8" height="8">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,3,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</chunk>
    <chunk x="0" y="8" width="8" height="8">
-64,0,0,0,0,0,0,0,
-64,0,0,0,0,0,0,0,
-0,34,3,3,3,3,3,3,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+3,3,3,3,3,3,3,3,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
@@ -289,20 +289,20 @@ to move around</text>
 to jump</text>
   </object>
   <object id="62" template="templates/text.tx" x="1568" y="64" width="336" height="48">
-   <text fontfamily="Lexend" pixelsize="15" halign="center">W  A  S  D    or    Arrow Keys
+   <text fontfamily="Lexend" pixelsize="17" halign="center">W  A  S  D    or    Arrow Keys
 to accelerate</text>
   </object>
  </objectgroup>
  <objectgroup color="#f66151" id="6" name="entities">
-  <object id="11" name="Player" type="player" x="136" y="132">
+  <object id="11" name="Player" type="player" x="1524" y="136">
    <point/>
   </object>
   <object id="30" template="templates/zone_deadly.tx" x="792" y="200" width="144" height="152" rotation="0"/>
   <object id="55" template="templates/zone_deadly.tx" x="1592" y="212" width="288" height="212"/>
  </objectgroup>
  <objectgroup color="#058ef0" id="7" name="colliders" opacity="0.35">
-  <object id="18" type="collider" x="16" y="160" width="416" height="32"/>
-  <object id="23" template="templates/collider_rect.tx" x="0" y="64" width="16" height="96"/>
+  <object id="18" type="collider" x="-16" y="160" width="448" height="32"/>
+  <object id="23" template="templates/collider_rect.tx" x="-32" y="64" width="16" height="96"/>
   <object id="39" type="collider" x="432" y="176" width="64" height="16"/>
   <object id="40" type="collider" x="496" y="160" width="304" height="80"/>
   <object id="45" type="collider" x="928" y="160" width="672" height="80"/>

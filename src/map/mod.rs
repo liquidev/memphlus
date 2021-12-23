@@ -97,7 +97,7 @@ impl IndexMut<(usize, usize)> for Chunk {
 
 /// A layer.
 pub enum Layer {
-   Tile { chunks: HashMap<(u32, u32), Chunk> },
+   Tile { chunks: HashMap<(i32, i32), Chunk> },
    Object,
 }
 

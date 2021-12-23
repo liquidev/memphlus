@@ -120,7 +120,7 @@ impl Layer {
    }
 
    fn draw_chunks(
-      chunks: &mut HashMap<(u32, u32), Chunk>,
+      chunks: &mut HashMap<(i32, i32), Chunk>,
       tileset: &Tileset,
       ctx: &mut Context,
       tstack: &mut TransformStack,

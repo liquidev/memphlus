@@ -126,8 +126,8 @@ impl Tileset {
 #[derive(Debug, Clone, Deserialize)]
 pub struct Chunk {
    pub data: Vec<TileId>,
-   pub x: u32,
-   pub y: u32,
+   pub x: i32,
+   pub y: i32,
 }
 
 /// An object in an object layer.
