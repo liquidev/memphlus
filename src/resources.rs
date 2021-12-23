@@ -40,16 +40,16 @@ impl Resources {
       self.map.get_mut(&TypeId::of::<T>()).map(|value| value.downcast_mut().unwrap())
    }
 
-   /// Executes a fallible function to insert a value into the resource map, if not already
+   /// Executes a function to insert a value into the resource map, if not already
    /// in there.
-   pub fn try_get_or_insert<T, E>(&mut self, f: impl FnOnce() -> Result<T, E>) -> Result<&mut T, E>
+   pub fn get_or_insert<T, E>(&mut self, f: impl FnOnce() -> T) -> &mut T
    where
       T: Any,
    {
       let type_id = TypeId::of::<T>();
       if !self.map.contains_key(&type_id) {
-         self.map.insert(type_id, Box::new(f()?));
+         self.map.insert(type_id, Box::new(f()));
       }
-      Ok(self.get_mut().unwrap())
+      self.get_mut().unwrap()
    }
 }

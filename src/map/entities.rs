@@ -3,14 +3,17 @@
 use std::str::FromStr;
 
 use hecs::{Entity, World};
+use log::{error, warn};
 use serde::de::IntoDeserializer;
 use serde::Deserialize;
 use vek::Mat2;
 
-use crate::common::{rect, vector};
+use crate::assets::FontFamily;
+use crate::common::{rect, vector, Rect};
 use crate::entities::camera::CameraView;
 use crate::entities::colliders::RectCollider;
 use crate::entities::player::Player;
+use crate::entities::text::Text;
 use crate::entities::zones::{DeadlyZone, PlatformerZone, ZoneData, ZoneSpawn, Zones};
 use crate::physics::Physics;
 use crate::tiled;
@@ -22,6 +25,8 @@ use super::{Layer, Map};
 #[serde(rename_all = "snake_case")]
 enum EntityKind {
    Player,
+   Text,
+
    Collider,
    CameraView,
 
@@ -48,7 +53,7 @@ impl Map {
          if let Ok(kind) = EntityKind::from_str(&object.kind) {
             Self::spawn_entity(kind, object, world, physics);
          } else {
-            eprintln!("warning: object of unknown kind {:?}", &object.kind);
+            warn!("object {} of unknown kind {:?}", object.id, &object.kind);
          }
       }
       Layer::Object
@@ -72,20 +77,38 @@ impl Map {
       let position = vector(data.x, data.y);
       let size = vector(data.width, data.height);
       let rect = rect(position, size);
-      let _ = match kind {
-         EntityKind::Player => Player::spawn(world, physics, position),
+      match kind {
+         EntityKind::Player => {
+            Player::spawn(world, physics, position);
+         }
+         EntityKind::Text => Self::spawn_text(data, world),
          EntityKind::Collider => Self::spawn_collider(&data, world, physics),
-         EntityKind::CameraView => CameraView::spawn(world, physics, rect),
+         EntityKind::CameraView => {
+            CameraView::spawn(world, physics, rect);
+         }
          EntityKind::ZoneDeadly => Self::spawn_zone(&data, world, physics, DeadlyZone),
          EntityKind::ZonePlatformer => Self::spawn_zone(&data, world, physics, PlatformerZone),
       };
    }
 
+   /// Spawns text into the world.
+   fn spawn_text(data: tiled::Object, world: &mut World) {
+      let rect = data.rect();
+      if let Some(text) = data.text {
+         match FontFamily::from_str(&text.font_family) {
+            Ok(font_family) => {
+               Text::spawn(world, rect, font_family, text.h_align, text.text);
+            }
+            Err(error) => error!("object {}: invalid font family ({})", data.id, error),
+         }
+      } else {
+         error!("object {} of type 'text' is not a text object", data.id);
+      }
+   }
+
    /// Spawns an appropriate collider entity.
-   fn spawn_collider(data: &tiled::Object, world: &mut World, physics: &mut Physics) -> Entity {
-      let position = vector(data.x, data.y);
-      let size = vector(data.width, data.height);
-      RectCollider::spawn(world, physics, rect(position, size))
+   fn spawn_collider(data: &tiled::Object, world: &mut World, physics: &mut Physics) {
+      RectCollider::spawn(world, physics, data.rect());
    }
 
    /// Spawns a zone of the given kind.
@@ -94,12 +117,18 @@ impl Map {
       world: &mut World,
       physics: &mut Physics,
       kind: impl ZoneData + ZoneSpawn,
-   ) -> Entity {
+   ) {
       let top_left = vector(data.x, data.y);
       let size = vector(data.width, data.height);
       let center_offset = size / 2.0;
       let rotation = Mat2::rotation_z(data.rotation);
       let center = top_left + rotation * center_offset;
-      Zones::spawn(world, physics, kind, center, size, data.rotation)
+      Zones::spawn(world, physics, kind, center, size, data.rotation);
+   }
+}
+
+impl tiled::Object {
+   fn rect(&self) -> Rect {
+      rect(vector(self.x, self.y), vector(self.width, self.height))
    }
 }

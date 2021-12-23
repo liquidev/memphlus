@@ -7,7 +7,8 @@ use tetra::graphics::{Color, DrawParams};
 use tetra::Context;
 use vek::Vec2;
 
-use crate::common::{vector, ToNalgebraVector2, WhiteTexture};
+use crate::assets::WhiteTexture;
+use crate::common::{vector, ToNalgebraVector2};
 use crate::physics::{CollisionGroups, Physics};
 use crate::resources::Resources;
 

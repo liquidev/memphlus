@@ -280,16 +280,16 @@
   <object id="56" template="templates/camera_view.tx" x="1440" y="0" width="592" height="336"/>
  </objectgroup>
  <objectgroup id="9" name="texts">
-  <object id="37" type="text" x="32" y="76" width="224" height="48">
-   <text fontfamily="Lexend Deca" pixelsize="12" halign="center">←  →     or     A  D
+  <object id="37" template="templates/text.tx" x="-16" y="80" width="320" height="32">
+   <text fontfamily="Lexend" pixelsize="12" halign="center">←  →     or     A  D
 to move around</text>
   </object>
-  <object id="38" type="text" x="352" y="80" width="224" height="48">
-   <text fontfamily="Lexend Deca" pixelsize="12" halign="center">Space or X
+  <object id="38" template="templates/text.tx" x="304" y="80" width="320" height="32">
+   <text fontfamily="Lexend" pixelsize="12" halign="center">Space or X
 to jump</text>
   </object>
   <object id="62" template="templates/text.tx" x="1568" y="64" width="336" height="48">
-   <text fontfamily="Lexend Deca" pixelsize="15" halign="center">W  A  S  D    or    ↑  ←  ↓  →
+   <text fontfamily="Lexend" pixelsize="15" halign="center">W  A  S  D    or    ↑  ←  ↓  →
 to accelerate</text>
   </object>
  </objectgroup>

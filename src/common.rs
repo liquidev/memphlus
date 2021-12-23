@@ -2,6 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
+use log::debug;
 use tetra::graphics::mesh::Vertex;
 use tetra::graphics::{Color, Rectangle, Texture};
 use tetra::math::Vec2;
@@ -101,25 +102,15 @@ pub fn asset_path(path: impl AsRef<Path>) -> PathBuf {
 /// Reads an asset file into a `Vec<u8>`.
 pub fn load_asset(path: impl AsRef<Path>) -> anyhow::Result<Vec<u8>> {
    let path = asset_path(path);
-   println!("loading {:?}", path);
+   debug!("loading {:?}", path);
    Ok(std::fs::read(&path)?)
 }
 
 /// Reads an asset file into a `String`.
 pub fn load_asset_to_string(path: impl AsRef<Path>) -> anyhow::Result<String> {
    let path = asset_path(path);
-   println!("loading {:?}", path);
+   debug!("loading {:?}", path);
    Ok(std::fs::read_to_string(path)?)
-}
-
-/// A texture resource consisting of a single white pixel.
-pub struct WhiteTexture(pub Texture);
-
-impl WhiteTexture {
-   pub fn insert_to(ctx: &mut Context, resources: &mut Resources) -> anyhow::Result<()> {
-      let texture = Texture::from_rgba(ctx, 1, 1, &[255, 255, 255, 255])?;
-      Ok(resources.insert::<WhiteTexture>(WhiteTexture(texture)))
-   }
 }
 
 pub fn window_size(ctx: &Context) -> Vec2<f32> {

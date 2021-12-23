@@ -15,11 +15,13 @@ mod transform;
 mod tween;
 
 use anyhow::Context as AnyhowContext;
-use common::WhiteTexture;
+use simple_logger::SimpleLogger;
+use tetra::{Context, ContextBuilder, Event};
+
+use assets::{Fonts, WhiteTexture};
 use input::Input;
 use resources::Resources;
 use state::GameState;
-use tetra::{Context, ContextBuilder, Event};
 
 struct Game {
    state: Option<Box<dyn GameState>>,
@@ -58,6 +60,8 @@ impl tetra::State<anyhow::Error> for Game {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+   SimpleLogger::new().without_timestamps().init()?;
+
    let mut ctx = ContextBuilder::new("mem.pHlus", 1280, 720)
       .resizable(true)
       .show_mouse(true)
@@ -72,6 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
    let mut resources = Resources::new();
 
    WhiteTexture::insert_to(&mut ctx, &mut resources)?;
+   Fonts::load_to(&mut resources)?;
 
    ctx.run(|_| {
       Ok(Game {

@@ -21,6 +21,7 @@ pub mod dead;
 pub mod interpolation;
 pub mod physics;
 pub mod player;
+pub mod text;
 pub mod zones;
 
 /// The position component.

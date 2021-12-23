@@ -130,6 +130,7 @@ pub struct Chunk {
    pub y: u32,
 }
 
+/// An object in an object layer.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Object {
    pub id: ObjectId,
@@ -142,8 +143,39 @@ pub struct Object {
    pub kind: String,
    #[serde(default)]
    pub properties: Properties,
+
+   /// If `Some`, the object is a text object.
+   pub text: Option<Text>,
 }
 
+/// The horizontal alignment of text inside a text object.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TextHAlign {
+   Left,
+   Center,
+   Right,
+}
+
+impl Default for TextHAlign {
+   fn default() -> Self {
+      Self::Left
+   }
+}
+
+/// A text object.
+#[derive(Debug, Clone, Deserialize)]
+pub struct Text {
+   #[serde(rename = "fontfamily")]
+   pub font_family: String,
+   #[serde(rename = "halign", default)]
+   pub h_align: TextHAlign,
+   #[serde(rename = "pixelsize")]
+   pub pixel_size: u32,
+   pub text: String,
+}
+
+/// The kind of a layer.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 pub enum LayerKind {
@@ -153,12 +185,14 @@ pub enum LayerKind {
    Object { objects: Vec<Object> },
 }
 
+/// A layer.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Layer {
    #[serde(flatten)]
    pub kind: LayerKind,
 }
 
+/// A Tiled map.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Map {
    pub layers: Vec<Layer>,
