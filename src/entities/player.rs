@@ -312,6 +312,8 @@ impl Player {
          world.query_mut::<(&Player, &mut InterpolatedPosition, &RigidBody, &Dead)>()
       {
          let body = &mut physics.rigid_bodies[body_handle];
+         // Prevent interpolation jank by resetting the current and previous position to the
+         // same value.
          ip.set(player.checkpoint);
          ip.reset();
          body.set_translation(player.checkpoint.nalgebra(), true);
