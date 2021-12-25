@@ -259,7 +259,7 @@ pub struct Player {
 
 impl Player {
    /// Creates a new player with the provided initial checkpoint.
-   pub fn new(checkpoint: Vec2<f32>) -> Self {
+   pub fn new() -> Self {
       let mut player = Self {
          spawn_animation: Tween::new(1.0),
       };
@@ -499,7 +499,7 @@ impl Player {
       world.spawn_at(
          entity,
          (
-            Player::new(position),
+            Player::new(),
             Position(position),
             InterpolatedPosition::new(position),
             Size(size),

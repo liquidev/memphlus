@@ -2,8 +2,9 @@
 
 use std::str::FromStr;
 
+use anyhow::Context;
 use hecs::{Entity, World};
-use log::{error, warn};
+use log::error;
 use serde::de::IntoDeserializer;
 use serde::Deserialize;
 use vek::Mat2;
@@ -107,27 +108,21 @@ impl Loader {
    /// Spawns text into the world.
    fn spawn_text(data: tiled::Object, world: &mut World, entity: Entity) -> anyhow::Result<()> {
       let rect = data.rect();
-      if let Some(text) = data.text {
-         match FontFamily::from_str(&text.font_family) {
-            Ok(font_family) => {
-               Text::spawn(
-                  world,
-                  entity,
-                  rect,
-                  font_family,
-                  text.h_align,
-                  text.pixel_size,
-                  text.text,
-               );
-            }
-            Err(error) => error!("object {}: invalid font family ({})", data.id, error),
-         }
-      } else {
-         error!(
-            "object {} of type 'text' is not a text object. maybe use the text.tx template?",
-            data.id
-         );
-      }
+      let text = data.text.ok_or_else(|| {
+         anyhow::anyhow!(
+            "object of type 'text' is not a text object. maybe use the text.tx template?"
+         )
+      })?;
+      let font_family = FontFamily::from_str(&text.font_family).context("invalid font family")?;
+      Text::spawn(
+         world,
+         entity,
+         rect,
+         font_family,
+         text.h_align,
+         text.pixel_size,
+         text.text,
+      );
       Ok(())
    }
 

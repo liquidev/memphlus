@@ -1,7 +1,7 @@
 //! Static colliders.
 
 use hecs::{Entity, World};
-use rapier2d::prelude::{ColliderBuilder, InteractionGroups, RigidBodyBuilder};
+use rapier2d::prelude::{ColliderBuilder, InteractionGroups};
 
 use crate::common::{Rect, ToNalgebraVector2};
 use crate::physics::{CollisionGroups, Physics};
