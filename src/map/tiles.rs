@@ -13,7 +13,7 @@ use crate::common::{vector, Axis, ToNalgebraVector2};
 use crate::physics::{CollisionGroups, Physics};
 use crate::tiled;
 
-use super::{Chunk, Layer, Loader, Map, Tileset};
+use super::{Chunk, Layer, Loader, Tileset};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[repr(u8)]

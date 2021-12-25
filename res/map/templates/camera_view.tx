@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <template>
- <object type="camera_view">
-  <properties>
-   <property name="trigger.player_entered" type="object" value="0"/>
-  </properties>
- </object>
+ <object type="camera_view"/>
 </template>

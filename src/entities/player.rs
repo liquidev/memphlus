@@ -20,6 +20,7 @@ use crate::physics::{CollisionGroups, Physics};
 use crate::tween::{easings, Tween};
 
 use super::camera::Camera;
+use super::checkpoint::RespawnPosition;
 use super::dead::{Alive, Dead, Kill};
 use super::interpolation::InterpolatedPosition;
 use super::physics::{Collider, RigidBody};
@@ -252,7 +253,6 @@ impl Platformer {
 
 /// Marker component and namespace for player-related functions.
 pub struct Player {
-   checkpoint: Vec2<f32>,
    /// Animation triggered right when the player spawns in, or turns into a different morph.
    spawn_animation: Tween<f32>,
 }
@@ -261,7 +261,6 @@ impl Player {
    /// Creates a new player with the provided initial checkpoint.
    pub fn new(checkpoint: Vec2<f32>) -> Self {
       let mut player = Self {
-         checkpoint,
          spawn_animation: Tween::new(1.0),
       };
       player.start_spawn_animation();
@@ -308,15 +307,28 @@ impl Player {
 
       // Respawn all dead players.
       let mut respawn = Vec::new();
-      for (id, (player, InterpolatedPosition(ip), &RigidBody(body_handle), &Dead)) in
-         world.query_mut::<(&Player, &mut InterpolatedPosition, &RigidBody, &Dead)>()
-      {
+      for (
+         id,
+         (
+            _player,
+            &RespawnPosition(respawn_position),
+            InterpolatedPosition(ip),
+            &RigidBody(body_handle),
+            &Dead,
+         ),
+      ) in world.query_mut::<(
+         &Player,
+         &RespawnPosition,
+         &mut InterpolatedPosition,
+         &RigidBody,
+         &Dead,
+      )>() {
          let body = &mut physics.rigid_bodies[body_handle];
          // Prevent interpolation jank by resetting the current and previous position to the
          // same value.
-         ip.set(player.checkpoint);
+         ip.set(respawn_position);
          ip.reset();
-         body.set_translation(player.checkpoint.nalgebra(), true);
+         body.set_translation(respawn_position.nalgebra(), true);
          // TODO(liquidev): Velocity-preserving death might be a neat mechanic.
          body.set_linvel(vector(0.0, 0.0).nalgebra(), true);
          respawn.push(id);
@@ -477,8 +489,9 @@ impl Player {
          .friction_combine_rule(CoefficientCombineRule::Min)
          .collision_groups(InteractionGroups::new(
             CollisionGroups::PLAYER,
-            CollisionGroups::SOLIDS,
+            CollisionGroups::SOLIDS | CollisionGroups::TRIGGERS,
          ))
+         .user_data(u64::from(entity.to_bits()) as u128)
          .build();
       let collider =
          physics.colliders.insert_with_parent(collider, body, &mut physics.rigid_bodies);
@@ -493,6 +506,7 @@ impl Player {
             RigidBody(body),
             Collider(collider),
             Morph::None,
+            RespawnPosition(position),
             Camera::new(),
          ),
       );

@@ -10,20 +10,24 @@ use crate::resources::Resources;
 use crate::transform::TransformStack;
 
 use self::camera::Camera;
+use self::checkpoint::Checkpoint;
 use self::dead::Kill;
 use self::interpolation::tick_interpolation;
 use self::physics::tick_physics;
 use self::player::Player;
 use self::text::Text;
+use self::trigger::Trigger;
 use self::zones::Zones;
 
 pub mod camera;
+pub mod checkpoint;
 pub mod colliders;
 pub mod dead;
 pub mod interpolation;
 pub mod physics;
 pub mod player;
 pub mod text;
+pub mod trigger;
 pub mod zones;
 
 /// The position component.
@@ -47,6 +51,8 @@ pub struct Size(pub Vec2<f32>);
 pub fn tick_systems(ctx: &mut Context, world: &mut World, physics: &mut Physics, input: &Input) {
    Player::tick_controls(ctx, world, physics, input);
    Player::tick(world, physics);
+   Trigger::tick(world, physics);
+   Checkpoint::tick(world);
    Kill::tick(world);
    tick_physics(world, physics);
    tick_interpolation(world);

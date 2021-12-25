@@ -5,8 +5,8 @@
  <objecttype name="collider_rect" color="#3584e4"/>
  <objecttype name="text" color="#000000"/>
  <objecttype name="trigger" color="#ff7800">
+  <property name="method" type="int" default="0"/>
   <property name="trigger" type="object" default="0"/>
-  <property name="which" type="int" default="0"/>
  </objecttype>
  <objecttype name="zone_deadly" color="#e01b24"/>
  <objecttype name="zone_platformer" color="#f6f5f4"/>

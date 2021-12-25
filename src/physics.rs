@@ -82,11 +82,17 @@ pub struct CollisionGroups;
 #[rustfmt::skip]
 impl CollisionGroups {
    pub const PLAYER: u32       = 0b00000000_00000001;
-   pub const MORPH_ZONES: u32  = 0b00000000_10000000;
 
    pub const SOLIDS: u32       = 0b00000001_00000000;
    pub const DEADLY: u32       = 0b00000010_00000000;
+   pub const MORPH_ZONES: u32  = 0b00000100_00000000;
+   pub const TRIGGERS: u32     = 0b00001000_00000000;
    pub const CAMERA_VIEWS: u32 = 0b10000000_00000000;
 
-   pub const ALL: u32 = Self::PLAYER | Self::MORPH_ZONES | Self::SOLIDS | Self::DEADLY | Self::CAMERA_VIEWS;
+   pub const ALL: u32 =
+      Self::PLAYER
+      | Self::SOLIDS
+      | Self::DEADLY
+      | Self::MORPH_ZONES
+      | Self::CAMERA_VIEWS;
 }

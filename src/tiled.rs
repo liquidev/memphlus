@@ -18,7 +18,25 @@ pub enum PropertyValue {
    Int(i32),
    Float(f32),
    Bool(bool),
-   Object(u32),
+   Object(ObjectId),
+}
+
+impl PropertyValue {
+   pub fn as_int(&self) -> Option<i32> {
+      if let Self::Int(v) = self {
+         Some(*v)
+      } else {
+         None
+      }
+   }
+
+   pub fn as_object(&self) -> Option<ObjectId> {
+      if let Self::Object(id) = self {
+         Some(*id)
+      } else {
+         None
+      }
+   }
 }
 
 /// Storage for properties.

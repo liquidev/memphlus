@@ -11,12 +11,14 @@ use vek::Mat2;
 use crate::assets::FontFamily;
 use crate::common::{rect, vector, Rect};
 use crate::entities::camera::CameraView;
+use crate::entities::checkpoint::Checkpoint;
 use crate::entities::colliders::RectCollider;
 use crate::entities::player::Player;
 use crate::entities::text::Text;
+use crate::entities::trigger::Trigger;
 use crate::entities::zones::{DeadlyZone, PlatformerZone, ZoneData, ZoneSpawn, Zones};
 use crate::physics::Physics;
-use crate::tiled;
+use crate::tiled::{self, PropertyValue};
 
 use super::{Layer, Loader, Map};
 
@@ -29,6 +31,8 @@ enum EntityKind {
 
    Collider,
    CameraView,
+   Trigger,
+   Checkpoint,
 
    ZonePlatformer,
    ZoneDeadly,
@@ -51,10 +55,13 @@ impl Loader {
       physics: &mut Physics,
    ) -> Layer {
       for object in objects {
+         let id = object.id;
          if let Ok(kind) = EntityKind::from_str(&object.kind) {
-            self.spawn_entity(kind, object, world, physics);
+            if let Err(error) = self.spawn_entity(kind, object, world, physics) {
+               error!("object {}: {}", id, error);
+            }
          } else {
-            warn!("object {} of unknown kind {:?}", object.id, &object.kind);
+            error!("object {} of unknown kind {:?}", object.id, &object.kind);
          }
       }
       Layer::Object
@@ -67,7 +74,7 @@ impl Loader {
       data: tiled::Object,
       world: &mut World,
       physics: &mut Physics,
-   ) {
+   ) -> anyhow::Result<()> {
       let entity = self.entity(world, data.id);
       let data = tiled::Object {
          x: data.x / Map::tile_size().x,
@@ -78,26 +85,27 @@ impl Loader {
          ..data
       };
       let position = vector(data.x, data.y);
-      let size = vector(data.width, data.height);
-      let rect = rect(position, size);
+      let rect = data.rect();
       match kind {
-         EntityKind::Player => {
-            Player::spawn(world, physics, entity, position);
-         }
-         EntityKind::Text => Self::spawn_text(data, world, entity),
+         EntityKind::Player => Player::spawn(world, physics, entity, position),
+         EntityKind::Text => Self::spawn_text(data, world, entity)?,
+
          EntityKind::Collider => Self::spawn_collider(&data, world, physics, entity),
-         EntityKind::CameraView => {
-            CameraView::spawn(world, physics, entity, rect);
-         }
+         EntityKind::CameraView => CameraView::spawn(world, physics, entity, rect),
+         EntityKind::Trigger => self.spawn_trigger(&data, world, physics, entity)?,
+         EntityKind::Checkpoint => Checkpoint::spawn(world, entity, position),
+
          EntityKind::ZoneDeadly => Self::spawn_zone(&data, world, physics, entity, DeadlyZone),
          EntityKind::ZonePlatformer => {
             Self::spawn_zone(&data, world, physics, entity, PlatformerZone)
          }
-      };
+      }
+
+      Ok(())
    }
 
    /// Spawns text into the world.
-   fn spawn_text(data: tiled::Object, world: &mut World, entity: Entity) {
+   fn spawn_text(data: tiled::Object, world: &mut World, entity: Entity) -> anyhow::Result<()> {
       let rect = data.rect();
       if let Some(text) = data.text {
          match FontFamily::from_str(&text.font_family) {
@@ -120,6 +128,7 @@ impl Loader {
             data.id
          );
       }
+      Ok(())
    }
 
    /// Spawns an appropriate collider entity.
@@ -146,6 +155,38 @@ impl Loader {
       let rotation = Mat2::rotation_z(data.rotation);
       let center = top_left + rotation * center_offset;
       Zones::spawn(world, physics, entity, kind, center, size, data.rotation);
+   }
+
+   fn spawn_trigger(
+      &mut self,
+      data: &tiled::Object,
+      world: &mut World,
+      physics: &mut Physics,
+      entity: Entity,
+   ) -> anyhow::Result<()> {
+      let rect = data.rect();
+      let target = data
+         .properties
+         .get("trigger")
+         .ok_or_else(|| anyhow::anyhow!("trigger target is missing"))?
+         .as_object()
+         .ok_or_else(|| anyhow::anyhow!("'trigger' field must be an object"))?;
+      let target = self.entity(world, target);
+      let method = data
+         .properties
+         .get("method")
+         .cloned()
+         .unwrap_or(PropertyValue::Int(0))
+         .as_int()
+         .ok_or_else(|| anyhow::anyhow!("'method' field must be an int"))?
+         as u32;
+      Ok(Trigger::spawn(
+         world,
+         physics,
+         entity,
+         rect,
+         Trigger::new(target, method),
+      ))
    }
 }
 
